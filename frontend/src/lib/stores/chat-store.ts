@@ -39,9 +39,13 @@ export const useChatStore = create<ChatState>((set) => ({
   setConversations: (conversations) => set({ conversations }),
 
   addConversation: (conversation) =>
-    set((state) => ({
-      conversations: [conversation, ...state.conversations],
-    })),
+    set((state) => {
+      // Check if conversation already exists
+      if (state.conversations.some(c => c.id === conversation.id)) {
+        return state;
+      }
+      return { conversations: [conversation, ...state.conversations] };
+    }),
 
   removeConversation: (id) =>
     set((state) => ({

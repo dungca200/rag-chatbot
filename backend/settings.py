@@ -1,37 +1,31 @@
-"""
-Pydantic settings for RAG Chatbot.
-Centralizes all environment variable configuration with validation.
-"""
 from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    """Application settings loaded from environment variables."""
-
     # Django Core
     DJANGO_SECRET_KEY: str
-    DJANGO_DEBUG: int = 1
-    DJANGO_ALLOWED_HOSTS: str = "localhost,127.0.0.1"
+    DJANGO_DEBUG: int
+    DJANGO_ALLOWED_HOSTS: str
 
     # Database (PostgreSQL)
-    DB_NAME: str = "rag_chatbot"
-    DB_HOST: str = "localhost"
-    DB_USER: str = "postgres"
-    DB_PASSWORD: str = ""
-    DB_PORT: int = 5432
+    DB_NAME: str
+    DB_HOST: str
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_PORT: int
 
     # Supabase
-    SUPABASE_URL: str = ""
-    SUPABASE_KEY: str = ""
+    SUPABASE_URL: str
+    SUPABASE_KEY: str
 
     # Gemini (Google AI)
-    GOOGLE_API_KEY: str = ""
+    GOOGLE_API_KEY: str
 
     # Tavily (Web Search)
-    TAVILY_API_KEY: str = ""
+    TAVILY_API_KEY: str
 
     # CORS
-    CORS_ALLOWED_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+    CORS_ALLOWED_ORIGINS: str
 
     model_config = {
         "env_file": ".env",

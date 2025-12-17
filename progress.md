@@ -31,11 +31,16 @@
 - Set AUTH_USER_MODEL in settings
 - `createsuperuser` works
 
+### BE-005: JWT auth endpoints ✅
+- Register, login, refresh, profile endpoints
+- Custom response format with success: true/false
+- POST /api/auth/login/ returns access+refresh tokens
+
 ---
 
 ## Current Sprint
 
-Phase 2: Auth System - BE-005 next (JWT auth endpoints)
+Phase 3: Supabase Integration - BE-006 next (Supabase client)
 
 ---
 
@@ -49,3 +54,4 @@ Phase 2: Auth System - BE-005 next (JWT auth endpoints)
 - **BE-002**: Pydantic settings configuration ✅
 - **BE-003**: PostgreSQL database connection ✅
 - **BE-004**: Custom User model ✅
+- **BE-005**: JWT auth endpoints ✅

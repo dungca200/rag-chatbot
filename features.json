@@ -36,7 +36,7 @@
     "feature": "JWT auth endpoints (register, login, refresh)",
     "track": "backend",
     "test_criteria": "POST /api/auth/login/ returns access+refresh tokens",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-004"]
   },
   {

@@ -14,6 +14,8 @@ class Conversation(models.Model):
         related_name='conversations'
     )
     title = models.CharField(max_length=255, blank=True)
+    # Active document key for this conversation (for follow-up questions)
+    document_key = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

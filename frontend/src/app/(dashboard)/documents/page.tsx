@@ -59,31 +59,31 @@ export default function DocumentsPage() {
           <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
         </div>
       ) : documents.length === 0 ? (
-        <div className="text-center py-12 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
-          <FileText className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-          <h2 className="text-lg font-semibold mb-2">No documents yet</h2>
-          <p className="text-gray-500 dark:text-gray-400">
+        <div className="text-center py-12 glass-card rounded-xl">
+          <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <h2 className="text-lg font-semibold mb-2 text-foreground">No documents yet</h2>
+          <p className="text-muted-foreground">
             Upload documents in the chat to see them here.
           </p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+        <div className="glass-card rounded-xl overflow-hidden">
           <table className="w-full">
-            <thead>
-              <tr className="border-b border-gray-200 dark:border-gray-800">
-                <th className="text-left text-sm font-medium text-gray-500 dark:text-gray-400 px-4 py-3">
+            <thead className="bg-background-secondary">
+              <tr className="border-b border-border">
+                <th className="text-left text-sm font-medium text-foreground-secondary px-4 py-3">
                   Name
                 </th>
-                <th className="text-left text-sm font-medium text-gray-500 dark:text-gray-400 px-4 py-3">
+                <th className="text-left text-sm font-medium text-foreground-secondary px-4 py-3">
                   Type
                 </th>
-                <th className="text-left text-sm font-medium text-gray-500 dark:text-gray-400 px-4 py-3">
+                <th className="text-left text-sm font-medium text-foreground-secondary px-4 py-3">
                   Size
                 </th>
-                <th className="text-left text-sm font-medium text-gray-500 dark:text-gray-400 px-4 py-3">
+                <th className="text-left text-sm font-medium text-foreground-secondary px-4 py-3">
                   Chunks
                 </th>
-                <th className="text-left text-sm font-medium text-gray-500 dark:text-gray-400 px-4 py-3">
+                <th className="text-left text-sm font-medium text-foreground-secondary px-4 py-3">
                   Status
                 </th>
                 <th className="w-12"></th>
@@ -95,40 +95,40 @@ export default function DocumentsPage() {
                 return (
                   <tr
                     key={doc.id}
-                    className="border-b border-gray-100 dark:border-gray-800 last:border-0"
+                    className="border-b border-border last:border-0 hover:bg-card-hover transition-colors"
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                          <FileIcon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                        <div className="p-2 bg-background-secondary rounded-lg">
+                          <FileIcon className="h-4 w-4 text-muted-foreground" />
                         </div>
-                        <span className="text-sm font-medium truncate max-w-[200px]">
+                        <span className="text-sm font-medium text-foreground truncate max-w-[200px]">
                           {doc.original_filename}
                         </span>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm text-gray-600 dark:text-gray-400 uppercase">
+                      <span className="text-sm text-muted-foreground uppercase">
                         {doc.file_type}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-sm text-muted-foreground">
                         {doc.file_size_display}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                      <span className="text-sm text-muted-foreground">
                         {doc.chunk_count}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={cn(
-                          'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                          'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
                           doc.is_vectorized
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                            ? 'bg-emerald-500 text-white'
+                            : 'bg-amber-500 text-white'
                         )}
                       >
                         {doc.is_vectorized ? 'Indexed' : 'Pending'}

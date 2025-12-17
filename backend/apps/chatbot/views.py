@@ -28,7 +28,7 @@ def sse_message(event: str, data: dict) -> str:
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
 
-def stream_chat_response(user, message, conversation_id=None, document_key=None, persist_embeddings=False):
+def stream_chat_response(user, message, conversation_id=None, document_key=None, persist_embeddings=False, file_info=None):
     """Generator that streams chat response via SSE."""
 
     # Get or create conversation
@@ -42,6 +42,18 @@ def stream_chat_response(user, message, conversation_id=None, document_key=None,
         conversation = Conversation.objects.create(user=user)
         yield sse_message("conversation", {"id": str(conversation.id)})
 
+    # Handle document_key: use provided one, or fall back to conversation's stored document_key
+    active_document_key = document_key
+    if document_key:
+        # New document uploaded - store it on the conversation
+        conversation.document_key = document_key
+        conversation.save(update_fields=['document_key'])
+        logger.info(f"Stored document_key {document_key} on conversation {conversation.id}")
+    elif conversation.document_key:
+        # No new document but conversation has one - use it for follow-up questions
+        active_document_key = conversation.document_key
+        logger.info(f"Using conversation's document_key {active_document_key} for follow-up")
+
     # Fetch previous messages for context (last 10)
     previous_messages = Message.objects.filter(
         conversation=conversation
@@ -52,28 +64,32 @@ def stream_chat_response(user, message, conversation_id=None, document_key=None,
         for msg in previous_messages
     ]
 
-    # Save user message
+    # Save user message with file info in metadata
+    user_metadata = {}
+    if file_info:
+        user_metadata['file'] = file_info
+
     user_message = Message.objects.create(
         conversation=conversation,
         role='user',
-        content=message
+        content=message,
+        metadata=user_metadata
     )
 
     yield sse_message("message", {
         "id": str(user_message.id),
         "role": "user",
-        "content": message
+        "content": message,
+        "file": file_info
     })
 
-    # Process through workflow
+    # Process through workflow with active document_key
     try:
-        yield sse_message("status", {"message": "Processing..."})
-
         result = process_user_query(
             query=message,
             user_id=str(user.id),
             thread_id=str(conversation.id),
-            document_key=document_key,
+            document_key=active_document_key,
             persist_embeddings=persist_embeddings,
             chat_history=chat_history
         )
@@ -149,7 +165,8 @@ def chat_stream(request):
             message=data['message'],
             conversation_id=data.get('conversation_id'),
             document_key=data.get('document_key'),
-            persist_embeddings=data.get('persist_embeddings', False)
+            persist_embeddings=data.get('persist_embeddings', False),
+            file_info=data.get('file_info')
         ),
         content_type='text/event-stream'
     )
@@ -192,6 +209,15 @@ def chat_sync(request):
     else:
         conversation = Conversation.objects.create(user=user)
 
+    # Handle document_key: use provided one, or fall back to conversation's stored document_key
+    document_key = data.get('document_key')
+    active_document_key = document_key
+    if document_key:
+        conversation.document_key = document_key
+        conversation.save(update_fields=['document_key'])
+    elif conversation.document_key:
+        active_document_key = conversation.document_key
+
     # Save user message
     Message.objects.create(
         conversation=conversation,
@@ -204,7 +230,7 @@ def chat_sync(request):
         query=data['message'],
         user_id=str(user.id),
         thread_id=str(conversation.id),
-        document_key=data.get('document_key'),
+        document_key=active_document_key,
         persist_embeddings=data.get('persist_embeddings', False)
     )
 

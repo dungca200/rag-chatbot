@@ -25,6 +25,13 @@ export interface RegisterRequest {
 }
 
 // Chat types
+export interface FileAttachment {
+  name: string;
+  size: number;
+  type: string;
+  url?: string;
+}
+
 export interface Message {
   id: string;
   role: 'user' | 'assistant';
@@ -32,6 +39,7 @@ export interface Message {
   sources?: Source[];
   agent?: string;
   created_at: string;
+  file?: FileAttachment;
 }
 
 export interface Conversation {

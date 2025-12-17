@@ -16,10 +16,10 @@ export function VectorizationToggle({ enabled, onChange, disabled }: Vectorizati
         onClick={() => onChange(!enabled)}
         disabled={disabled}
         className={cn(
-          'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+          'relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300',
           enabled
-            ? 'bg-blue-600'
-            : 'bg-gray-300 dark:bg-gray-600',
+            ? 'bg-gradient-to-r from-accent to-accent-secondary'
+            : 'glass',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
         role="switch"
@@ -27,21 +27,26 @@ export function VectorizationToggle({ enabled, onChange, disabled }: Vectorizati
       >
         <span
           className={cn(
-            'inline-block h-4 w-4 rounded-full bg-white transition-transform',
-            enabled ? 'translate-x-6' : 'translate-x-1'
+            'inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-all duration-300',
+            enabled ? 'translate-x-6' : 'translate-x-1',
+            enabled && 'shadow-lg shadow-accent/50'
           )}
         />
       </button>
-      <div className="flex items-center gap-1.5 text-sm">
+      <div className="flex items-center gap-2 text-sm">
         {enabled ? (
           <>
-            <Database className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-gray-700 dark:text-gray-300">Store in database</span>
+            <div className="p-1.5 rounded-lg bg-accent/10">
+              <Database className="h-4 w-4 text-accent" />
+            </div>
+            <span className="text-foreground">Store in database</span>
           </>
         ) : (
           <>
-            <Clock className="h-4 w-4 text-gray-500" />
-            <span className="text-gray-500">Session only</span>
+            <div className="p-1.5 rounded-lg glass">
+              <Clock className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <span className="text-muted-foreground">Session only</span>
           </>
         )}
       </div>

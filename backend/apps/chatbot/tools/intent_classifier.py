@@ -25,15 +25,18 @@ class IntentClassification(BaseModel):
 CLASSIFICATION_PROMPT = """You are an intent classifier for a RAG chatbot. Analyze the user query and determine which agent should handle it.
 
 Available agents:
-- rag: ONLY for questions about user's UPLOADED documents (e.g., "What does my PDF say about X?", "Summarize my uploaded file", "Find in my document")
-- web_search: For general knowledge questions, facts, current events, definitions, explanations (e.g., "What is the powerhouse of a cell?", "Who is the president?", "How does X work?")
-- conversation: For greetings, smalltalk, personal chat, help requests, questions about the bot itself (e.g., "Hello", "How are you?", "What can you do?")
-- document: For file upload/processing requests (e.g., "Upload a file", "Process this document")
+- rag: For questions about user's documents OR follow-up questions that refer to previously discussed document content
+- web_search: For general knowledge questions, facts, current events, definitions, explanations that are NOT about user's documents
+- conversation: For greetings, smalltalk, personal chat, help requests, questions about the bot itself
+- document: For file upload/processing requests
 
-IMPORTANT:
-- Use "rag" ONLY when the user explicitly refers to their uploaded documents
-- Use "web_search" for any factual/knowledge question that doesn't mention uploaded documents
-- Default to "conversation" for ambiguous social queries
+{history_context}
+
+IMPORTANT ROUTING RULES:
+1. If the conversation history shows a document was recently analyzed, follow-up questions about that content should go to "rag"
+2. Use "rag" when user asks about specific data, numbers, or content that would come from their documents
+3. Use "web_search" ONLY for general knowledge NOT related to user's documents
+4. Default to "conversation" for greetings and ambiguous social queries
 
 User Query: {query}
 
@@ -47,10 +50,39 @@ class IntentClassifier:
         self.llm = get_chat_model(temperature=0.0)
         self.structured_llm = self.llm.with_structured_output(IntentClassification)
 
+    def _format_history_context(self, chat_history: list) -> str:
+        """Format chat history to provide context for classification."""
+        if not chat_history:
+            return "Conversation History: This is the start of the conversation."
+
+        # Check if any previous message involved document analysis
+        has_document_context = False
+        recent_messages = []
+
+        for msg in chat_history[-4:]:  # Last 4 messages for context
+            role = msg.get("role", "user")
+            content = msg.get("content", "")[:150]
+            recent_messages.append(f"- {role}: {content}")
+
+            # Check for document-related keywords in assistant responses
+            if role == "assistant":
+                doc_keywords = ["document", "file", "uploaded", "pdf", "page", "section", "chapter", "table", "figure"]
+                if any(kw in content.lower() for kw in doc_keywords):
+                    has_document_context = True
+
+        history_text = "\n".join(recent_messages)
+        context = f"Conversation History:\n{history_text}"
+
+        if has_document_context:
+            context += "\n\nNOTE: The conversation shows previous document analysis. Follow-up questions likely relate to that document."
+
+        return context
+
     def classify(
         self,
         query: str,
-        document_key: Optional[str] = None
+        document_key: Optional[str] = None,
+        chat_history: Optional[list] = None
     ) -> Dict:
         """
         Classify the intent of a user query.
@@ -58,6 +90,7 @@ class IntentClassifier:
         Args:
             query: The user's query
             document_key: If provided, overrides to rag agent
+            chat_history: Previous messages for context
 
         Returns:
             Dict with 'agent' and 'rationale' keys
@@ -77,7 +110,8 @@ class IntentClassifier:
             }
 
         try:
-            prompt = CLASSIFICATION_PROMPT.format(query=query)
+            history_context = self._format_history_context(chat_history or [])
+            prompt = CLASSIFICATION_PROMPT.format(query=query, history_context=history_context)
             result = self.structured_llm.invoke(prompt)
 
             return {
@@ -96,8 +130,9 @@ class IntentClassifier:
 
 def classify_intent(
     query: str,
-    document_key: Optional[str] = None
+    document_key: Optional[str] = None,
+    chat_history: Optional[list] = None
 ) -> Dict:
     """Convenience function for intent classification."""
     classifier = IntentClassifier()
-    return classifier.classify(query, document_key)
+    return classifier.classify(query, document_key, chat_history)

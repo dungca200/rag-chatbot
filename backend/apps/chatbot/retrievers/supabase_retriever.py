@@ -27,7 +27,7 @@ class SupabaseRetriever:
         self,
         query: str,
         top_k: int = 5,
-        match_threshold: float = 0.15
+        match_threshold: float = 0.1  # Lowered from 0.15 for better recall
     ) -> List[Dict]:
         """
         Perform semantic search and return relevant documents.
@@ -46,19 +46,21 @@ class SupabaseRetriever:
 
         try:
             # Generate embedding for query
+            logger.info(f"Generating embedding for query: {query[:50]}...")
             query_embedding = embed_query(query)
 
-            # Perform semantic search
+            # Perform semantic search - pass None for thread_id to search all user docs
+            logger.info(f"Searching documents for user {self.user_id}, thread_id={self.thread_id}")
             results = match_documents(
                 query_embedding=query_embedding,
                 user_id=self.user_id,
-                thread_id=self.thread_id,
+                thread_id=None,  # Always search ALL user documents, not just thread-specific
                 match_threshold=match_threshold,
                 match_count=top_k
             )
 
             if not results:
-                logger.info("No matching documents found")
+                logger.info(f"No matching documents found for user {self.user_id}")
                 return []
 
             # Format results
@@ -71,6 +73,7 @@ class SupabaseRetriever:
                     'similarity': doc.get('similarity'),
                     'metadata': doc.get('metadata', {})
                 })
+                logger.info(f"Found doc: {doc.get('key')} with similarity {doc.get('similarity')}")
 
             logger.info(f"Retrieved {len(documents)} documents for query")
             return documents

@@ -16,14 +16,14 @@ interface StatsCardProps {
 
 function StatsCard({ title, value, icon: Icon, href }: StatsCardProps) {
   const content = (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
+    <div className="glass-card rounded-xl p-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">{title}</p>
-          <p className="text-3xl font-bold mt-1">{value.toLocaleString()}</p>
+          <p className="text-sm text-muted-foreground">{title}</p>
+          <p className="text-3xl font-bold mt-1 text-foreground">{value.toLocaleString()}</p>
         </div>
-        <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-          <Icon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+        <div className="p-3 bg-accent-subtle rounded-lg">
+          <Icon className="h-6 w-6 text-accent" />
         </div>
       </div>
     </div>
@@ -100,28 +100,28 @@ export default function AdminPage() {
       </div>
 
       <div className="mt-8">
-        <h2 className="text-lg font-semibold mb-4">Quick Links</h2>
+        <h2 className="text-lg font-semibold mb-4 text-foreground">Quick Links</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
             href="/admin/users"
-            className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-blue-500 transition-colors"
+            className="flex items-center gap-3 p-4 glass-card rounded-xl hover:border-accent transition-colors"
           >
-            <Users className="h-5 w-5 text-gray-500" />
+            <Users className="h-5 w-5 text-muted-foreground" />
             <div>
-              <p className="font-medium">Manage Users</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="font-medium text-foreground">Manage Users</p>
+              <p className="text-sm text-muted-foreground">
                 View and manage user accounts
               </p>
             </div>
           </Link>
           <Link
             href="/documents"
-            className="flex items-center gap-3 p-4 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-blue-500 transition-colors"
+            className="flex items-center gap-3 p-4 glass-card rounded-xl hover:border-accent transition-colors"
           >
-            <Database className="h-5 w-5 text-gray-500" />
+            <Database className="h-5 w-5 text-muted-foreground" />
             <div>
-              <p className="font-medium">Vector Database</p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="font-medium text-foreground">Vector Database</p>
+              <p className="text-sm text-muted-foreground">
                 View indexed documents
               </p>
             </div>

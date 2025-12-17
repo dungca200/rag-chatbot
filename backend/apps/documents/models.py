@@ -27,6 +27,7 @@ class Document(models.Model):
     file_type = models.CharField(max_length=50, choices=FILE_TYPE_CHOICES)
     file_size = models.PositiveIntegerField(help_text="File size in bytes")
     storage_path = models.CharField(max_length=500, blank=True)
+    file_url = models.URLField(max_length=1000, blank=True)
     document_key = models.CharField(max_length=100, unique=True, db_index=True)
     is_vectorized = models.BooleanField(default=False)
     is_persistent = models.BooleanField(default=True)

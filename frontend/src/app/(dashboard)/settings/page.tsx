@@ -23,7 +23,7 @@ export default function SettingsPage() {
     return (
       <div className="p-6 max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Settings</h1>
-        <div className="animate-pulse bg-gray-200 dark:bg-gray-800 h-48 rounded-xl" />
+        <div className="animate-pulse bg-card h-48 rounded-xl" />
       </div>
     );
   }
@@ -32,9 +32,9 @@ export default function SettingsPage() {
     <div className="p-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6">
-        <h2 className="text-lg font-semibold mb-4">Appearance</h2>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <div className="glass-card rounded-xl p-6">
+        <h2 className="text-lg font-semibold mb-4 text-foreground">Appearance</h2>
+        <p className="text-sm text-muted-foreground mb-4">
           Choose how the app looks to you.
         </p>
 
@@ -49,17 +49,17 @@ export default function SettingsPage() {
                 className={cn(
                   'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors',
                   isActive
-                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    ? 'border-accent bg-accent-subtle'
+                    : 'border-border hover:border-accent/50'
                 )}
               >
                 <Icon className={cn(
                   'h-6 w-6',
-                  isActive ? 'text-blue-600' : 'text-gray-500'
+                  isActive ? 'text-accent' : 'text-muted-foreground'
                 )} />
                 <span className={cn(
                   'text-sm font-medium',
-                  isActive ? 'text-blue-600' : 'text-gray-700 dark:text-gray-300'
+                  isActive ? 'text-accent' : 'text-foreground'
                 )}>
                   {t.label}
                 </span>

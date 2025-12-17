@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from .models import Document
 from .serializers import DocumentSerializer, FileUploadSerializer
 from apps.chatbot.tools import process_and_vectorize_file
+from core.clients.supabase_client import delete_documents_by_key, upload_file_to_storage, delete_file_from_storage
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +83,40 @@ def upload_document(request):
                 tmp.write(chunk)
             tmp_path = tmp.name
 
+        # Upload to Supabase Storage for later viewing
+        content_type_map = {
+            '.pdf': 'application/pdf',
+            '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            '.xlsm': 'application/vnd.ms-excel.sheet.macroEnabled.12',
+            '.txt': 'text/plain',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.bmp': 'image/bmp',
+            '.tiff': 'image/tiff',
+        }
+        content_type = content_type_map.get(ext, 'application/octet-stream')
+
+        # Try to upload to storage (optional - continues even if fails)
+        file_url = ''
+        storage_path = ''
+        try:
+            storage_result = upload_file_to_storage(
+                file_path=tmp_path,
+                file_name=uploaded_file.name,
+                user_id=str(request.user.id),
+                content_type=content_type
+            )
+            logger.info(f"Storage upload result: {storage_result}")
+            if storage_result:
+                file_url = storage_result.get('file_url', '')
+                storage_path = storage_result.get('storage_path', '')
+                logger.info(f"Got file_url: {file_url}")
+        except Exception as storage_error:
+            logger.warning(f"Storage upload failed (continuing without): {storage_error}")
+
         # Process and vectorize
         result = process_and_vectorize_file(
             file_path=tmp_path,
@@ -105,6 +140,8 @@ def upload_document(request):
             original_filename=uploaded_file.name,
             file_type=get_file_type(uploaded_file.name),
             file_size=uploaded_file.size,
+            storage_path=storage_path,
+            file_url=file_url,
             document_key=result['document_key'],
             is_vectorized=result.get('vectorized', False),
             is_persistent=persist,
@@ -117,6 +154,9 @@ def upload_document(request):
             "document_id": str(document.id),
             "document_key": document.document_key,
             "filename": document.original_filename,
+            "file_url": document.file_url,
+            "file_type": document.file_type,
+            "file_size": document.file_size,
             "chunk_count": document.chunk_count,
             "vectorized": document.is_vectorized
         }, status=status.HTTP_201_CREATED)
@@ -173,7 +213,7 @@ def get_document(request, document_id):
 @permission_classes([IsAuthenticated])
 def delete_document(request, document_id):
     """
-    Delete a document.
+    Delete a document and its vectors from Supabase.
 
     DELETE /api/documents/{id}/
     """
@@ -186,11 +226,26 @@ def delete_document(request, document_id):
         }, status=status.HTTP_404_NOT_FOUND)
 
     document_key = document.document_key
-    document.delete()
+    user_id = str(request.user.id)
+    storage_path = document.storage_path
 
-    # TODO: Also delete vectors from Supabase using document_key
+    # Delete vectors from Supabase
+    vector_result = delete_documents_by_key(document_key, user_id)
+    if not vector_result.get("success"):
+        logger.warning(f"Failed to delete vectors for {document_key}: {vector_result.get('error')}")
+
+    # Delete file from storage (if exists)
+    if storage_path:
+        try:
+            delete_file_from_storage(storage_path)
+        except Exception as e:
+            logger.warning(f"Failed to delete file from storage: {e}")
+
+    # Delete Django record
+    document.delete()
 
     return Response({
         "success": True,
-        "message": f"Document {document_key} deleted"
+        "message": f"Document {document_key} deleted",
+        "vectors_deleted": vector_result.get("deleted_count", 0)
     })

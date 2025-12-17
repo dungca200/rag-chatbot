@@ -81,17 +81,31 @@ def rag_agent_node(state: AgentState) -> Dict:
     # Initialize retriever
     retriever = SupabaseRetriever()
     retriever.set_user_id(user_id)
-    if thread_id:
-        retriever.set_thread_id(thread_id)
 
-    # Retrieve documents
+    # Smart document retrieval:
+    # 1. Always do semantic search to find the most relevant documents
+    # 2. If document_key exists, also include that document as context
+    # This allows the bot to answer questions about OTHER documents even when one is uploaded
+
+    # First, do semantic search across all user's documents
+    documents = retriever.retrieve(query, top_k=5)
+    logger.info(f"Semantic search found {len(documents)} documents")
+
+    # If a specific document_key is provided, check if it's already in results
     if document_key:
-        # Direct document lookup
-        doc = retriever.get_document_by_key(document_key)
-        documents = [doc] if doc else []
-    else:
-        # Semantic search
-        documents = retriever.retrieve(query, top_k=5)
+        doc_keys_found = [d.get('key', '').split('_chunk_')[0] for d in documents]
+
+        # If the conversation's document isn't in semantic results,
+        # it means the query might still be about that document but with different wording
+        # Add it to provide context
+        if document_key not in doc_keys_found:
+            logger.info(f"Adding conversation document {document_key} to context")
+            doc = retriever.get_document_by_key(document_key)
+            if doc:
+                # Add at the end with lower priority (semantic matches come first)
+                documents.append(doc)
+        else:
+            logger.info(f"Conversation document {document_key} already in semantic results")
 
     # Format context
     context = _format_context(documents)

@@ -16,11 +16,12 @@ def orchestrator_node(state: AgentState) -> Dict:
     """
     query = state.get("query", "")
     document_key = state.get("document_key")
+    chat_history = state.get("chat_history", [])
 
     logger.info(f"Orchestrator processing query: {query[:50]}...")
 
-    # Classify intent
-    result = classify_intent(query, document_key)
+    # Classify intent with chat history for context
+    result = classify_intent(query, document_key, chat_history)
     target_agent = result["agent"]
     rationale = result["rationale"]
 

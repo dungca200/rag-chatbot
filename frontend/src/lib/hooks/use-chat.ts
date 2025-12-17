@@ -42,6 +42,12 @@ interface SSEData {
   title?: string;
   sources?: unknown[];
   agent?: string;
+  file?: {
+    name: string;
+    size: number;
+    type: string;
+    url?: string;
+  };
 }
 
 export function useChat() {
@@ -50,6 +56,7 @@ export function useChat() {
     messages,
     setMessages,
     addMessage,
+    updateMessage,
     currentConversationId,
     setCurrentConversationId,
     addConversation,
@@ -75,12 +82,22 @@ export function useChat() {
 
     const targetConversationId = conversationId || currentConversationId;
 
-    // Add user message optimistically
+    // Use default message if only file is provided
+    const messageContent = content || (file ? `Analyze this file: ${file.name}` : '');
+
+    // File info to be updated after upload
+    let fileInfo: { name: string; size: number; type: string; url?: string } | undefined;
+    if (file) {
+      fileInfo = { name: file.name, size: file.size, type: file.type };
+    }
+
+    // Add user message optimistically with file info
     const userMessage: Message = {
       id: `temp-${Date.now()}`,
       role: 'user',
-      content,
+      content: messageContent,
       created_at: new Date().toISOString(),
+      file: fileInfo,
     };
     addMessage(userMessage);
 
@@ -91,7 +108,7 @@ export function useChat() {
     try {
       // Prepare request body
       const body: Record<string, unknown> = {
-        message: content,
+        message: messageContent,
         persist_embeddings: persistEmbeddings,
       };
 
@@ -118,7 +135,18 @@ export function useChat() {
           if (uploadData.document_key) {
             body.document_key = uploadData.document_key;
           }
+          // Update file info with data from upload (including URL if available)
+          fileInfo = {
+            name: uploadData.filename || file.name,
+            size: uploadData.file_size || file.size,
+            type: uploadData.file_type || file.type,
+            url: uploadData.file_url || undefined,
+          };
+          // Update the optimistic message with the file URL
+          updateMessage(userMessage.id, { file: fileInfo });
         }
+        // Always include file info for message storage (even without URL)
+        body.file_info = fileInfo;
       }
 
       // Send SSE request with retry on 401
@@ -248,6 +276,7 @@ export function useChat() {
   }, [
     currentConversationId,
     addMessage,
+    updateMessage,
     setLoading,
     setStreaming,
     setStreamingContent,

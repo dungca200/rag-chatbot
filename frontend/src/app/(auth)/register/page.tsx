@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Sparkles, ArrowRight } from 'lucide-react';
 
 const registerSchema = z.object({
   username: z.string()
@@ -46,18 +47,27 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="w-full max-w-md">
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 border border-gray-200 dark:border-gray-800">
+    <div className="w-full max-w-md animate-fade-up">
+      <div className="glass rounded-3xl p-8 relative overflow-hidden">
+        {/* Decorative gradient */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-accent-secondary via-accent to-accent-secondary" />
+
+        {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold">Create an account</h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
-            Get started with RAG Chatbot
+          <div className="inline-flex p-4 rounded-2xl glass mb-4 glow">
+            <Sparkles className="h-8 w-8 text-accent" />
+          </div>
+          <h1 className="text-display text-3xl font-bold mb-2">
+            <span className="text-gradient">Create account</span>
+          </h1>
+          <p className="text-muted-foreground">
+            Get started with RAG Chat
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           {error && (
-            <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-sm">
+            <div className="p-4 rounded-xl bg-error/10 border border-error/20 text-error text-sm animate-fade-up">
               {error}
             </div>
           )}
@@ -95,23 +105,26 @@ export default function RegisterPage() {
 
           <Button
             type="submit"
-            className="w-full"
+            className="w-full group"
             size="lg"
             isLoading={isLoading}
           >
             Create account
+            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-600 dark:text-gray-400">
-          Already have an account?{' '}
-          <Link
-            href="/login"
-            className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-          >
-            Sign in
-          </Link>
-        </p>
+        <div className="mt-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link
+              href="/login"
+              className="text-accent hover:text-accent-secondary transition-colors font-medium"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

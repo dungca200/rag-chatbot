@@ -36,11 +36,22 @@
 - Custom response format with success: true/false
 - POST /api/auth/login/ returns access+refresh tokens
 
+### BE-006: Supabase client configuration ✅
+- Created supabase_client.py with connection, match_documents, upsert_document
+- Added check_supabase management command
+- Health check passes
+
+### BE-007: Supabase pgvector table + match_documents RPC ✅
+- Created documents table with VECTOR(768) for Gemini embeddings
+- Added thread_id, is_persistent for session/store mode toggle
+- Created match_documents, get_document_by_parent_key, cleanup_session_documents RPCs
+- RPC function callable and working
+
 ---
 
 ## Current Sprint
 
-Phase 3: Supabase Integration - BE-006 next (Supabase client)
+Phase 3: Supabase Integration - BE-008 next (Gemini embeddings)
 
 ---
 
@@ -55,3 +66,5 @@ Phase 3: Supabase Integration - BE-006 next (Supabase client)
 - **BE-003**: PostgreSQL database connection ✅
 - **BE-004**: Custom User model ✅
 - **BE-005**: JWT auth endpoints ✅
+- **BE-006**: Supabase client configuration ✅
+- **BE-007**: Supabase pgvector + match_documents RPC ✅

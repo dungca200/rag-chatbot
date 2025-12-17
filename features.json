@@ -44,7 +44,7 @@
     "feature": "Supabase client configuration",
     "track": "backend",
     "test_criteria": "Supabase client connects, health check passes",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-002"]
   },
   {
@@ -52,7 +52,7 @@
     "feature": "Supabase pgvector table + match_documents RPC",
     "track": "backend",
     "test_criteria": "RPC function callable, returns similar documents",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-006"]
   },
   {

@@ -56,11 +56,20 @@
 - ChatGoogleGenerativeAI with gemini-2.0-flash model
 - generate_response helper function
 
+### BE-009: Supabase retriever class ✅
+- SupabaseRetriever with retrieve(), get_document_by_key()
+- Integrates Gemini embeddings with Supabase match_documents RPC
+
+### BE-010: AgentState TypedDict schema ✅
+- LangGraph-compatible state with thread_id, user_id
+- persist_embeddings toggle for store/session mode
+- target_agent routing, retrieved_context, responses, sources
+
 ---
 
 ## Current Sprint
 
-Phase 4: Agent Framework - BE-009, BE-010 next
+Phase 4: Agent Framework - BE-012 next (Intent Classifier)
 
 ---
 
@@ -78,4 +87,6 @@ Phase 4: Agent Framework - BE-009, BE-010 next
 - **BE-006**: Supabase client configuration ✅
 - **BE-007**: Supabase pgvector + match_documents RPC ✅
 - **BE-008**: Gemini embeddings (768-dim) ✅
+- **BE-009**: Supabase retriever class ✅
+- **BE-010**: AgentState TypedDict schema ✅
 - **BE-011**: Gemini LLM client ✅

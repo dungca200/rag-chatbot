@@ -68,7 +68,7 @@
     "feature": "Supabase retriever class",
     "track": "backend",
     "test_criteria": "retrieve(query) returns list of documents",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-007", "BE-008"]
   },
   {
@@ -76,7 +76,7 @@
     "feature": "AgentState TypedDict schema",
     "track": "backend",
     "test_criteria": "Importable with all required fields",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-001"]
   },
   {

@@ -1,19 +1,23 @@
 """
 Django settings for RAG Chatbot project.
+Uses Pydantic settings for environment variable management.
 """
-import os
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-production')
+# Add backend root to path for settings import
+sys.path.insert(0, str(BASE_DIR))
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', '1') == '1'
+# Import Pydantic settings
+from settings import settings as env_settings
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+# Core Django settings from Pydantic
+SECRET_KEY = env_settings.django_secret_key
+DEBUG = env_settings.django_debug
+ALLOWED_HOSTS = env_settings.allowed_hosts_list
 
 # Application definition
 INSTALLED_APPS = [
@@ -28,6 +32,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'corsheaders',
     # Local apps
+    'core',
     'apps.authentication',
     'apps.chatbot',
     'apps.documents',
@@ -117,10 +122,7 @@ SIMPLE_JWT = {
 
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    'CORS_ALLOWED_ORIGINS',
-    'http://localhost:3000,http://127.0.0.1:3000'
-).split(',')
+CORS_ALLOWED_ORIGINS = env_settings.cors_origins_list
 
 # Custom User Model (will be created in BE-004)
 # AUTH_USER_MODEL = 'authentication.User'

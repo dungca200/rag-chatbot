@@ -12,7 +12,7 @@
     "feature": "Pydantic settings configuration",
     "track": "backend",
     "test_criteria": ".env loads, GOOGLE_API_KEY accessible via settings",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-001"]
   },
   {

@@ -128,5 +128,5 @@ SIMPLE_JWT = {
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = [o.strip() for o in env_settings.CORS_ALLOWED_ORIGINS.split(",") if o.strip()]
 
-# Custom User Model (will be created in BE-004)
-# AUTH_USER_MODEL = 'authentication.User'
+# Custom User Model
+AUTH_USER_MODEL = 'authentication.User'

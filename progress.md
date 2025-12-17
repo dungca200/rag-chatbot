@@ -26,11 +26,16 @@
 - Uses Pydantic settings for DB credentials
 - `python manage.py migrate` succeeds
 
+### BE-004: Custom User model with AbstractUser ✅
+- Created User model extending AbstractUser with unique email
+- Set AUTH_USER_MODEL in settings
+- `createsuperuser` works
+
 ---
 
 ## Current Sprint
 
-Phase 2: Auth System - BE-004 next (Custom User model)
+Phase 2: Auth System - BE-005 next (JWT auth endpoints)
 
 ---
 
@@ -43,3 +48,4 @@ Phase 2: Auth System - BE-004 next (Custom User model)
 - **BE-001**: Django project structure created ✅
 - **BE-002**: Pydantic settings configuration ✅
 - **BE-003**: PostgreSQL database connection ✅
+- **BE-004**: Custom User model ✅

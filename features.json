@@ -28,7 +28,7 @@
     "feature": "Custom User model with AbstractUser",
     "track": "backend",
     "test_criteria": "AUTH_USER_MODEL set, createsuperuser works",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-003"]
   },
   {

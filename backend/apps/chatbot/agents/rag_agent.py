@@ -3,6 +3,7 @@ from typing import Dict, List
 
 from apps.chatbot.graph.state import AgentState, ChatMessage
 from apps.chatbot.retrievers.supabase_retriever import SupabaseRetriever
+from apps.chatbot.tools.web_search import search_and_summarize
 from core.clients.gemini_client import get_chat_model
 
 logger = logging.getLogger(__name__)
@@ -85,6 +86,9 @@ def rag_agent_node(state: AgentState) -> Dict:
         retriever.set_thread_id(thread_id)
 
     # Retrieve documents
+    used_web_search = False
+    web_sources = []
+
     if document_key:
         # Direct document lookup
         doc = retriever.get_document_by_key(document_key)
@@ -93,9 +97,21 @@ def rag_agent_node(state: AgentState) -> Dict:
         # Semantic search
         documents = retriever.retrieve(query, top_k=5)
 
-    # Format context and history
-    context = _format_context(documents)
-    sources = _extract_sources(documents)
+    # If no documents found, fall back to web search
+    if not documents:
+        logger.info("No documents found, falling back to web search...")
+        web_result = search_and_summarize(query, max_results=5)
+        if web_result.get("success") and web_result.get("context"):
+            context = web_result["context"]
+            web_sources = web_result.get("sources", [])
+            used_web_search = True
+            logger.info(f"Web search returned {len(web_sources)} sources")
+        else:
+            context = "No relevant documents found."
+    else:
+        context = _format_context(documents)
+
+    sources = _extract_sources(documents) if documents else [s.get("url", s.get("title", "")) for s in web_sources]
     history_section = _format_chat_history(chat_history)
 
     # Generate response
@@ -124,6 +140,7 @@ def rag_agent_node(state: AgentState) -> Dict:
         "node": "rag_agent",
         "action": "retrieve_and_generate",
         "documents_retrieved": len(documents),
+        "used_web_search": used_web_search,
         "sources": sources
     }
 

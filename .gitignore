@@ -1,0 +1,15 @@
+# Environment variables (contains API keys)
+.env
+.env.local
+.env.*.local
+
+# ElevenLabs output
+/tmp/elevenlabs/
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+.mcp.json

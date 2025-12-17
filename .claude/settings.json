@@ -1,0 +1,17 @@
+{
+  "enableAllProjectMcpServers": true,
+  "disabledMcpjsonServers": ["playwright", "firecrawl", "shadcn-ui", "figma"],
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run .claude/hooks/stop.py"
+          }
+        ]
+      }
+    ]
+  }
+}

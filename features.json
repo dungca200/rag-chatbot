@@ -1,0 +1,474 @@
+[
+  {
+    "id": "BE-001",
+    "feature": "Django project setup with config structure",
+    "track": "backend",
+    "test_criteria": "python manage.py check passes, server runs at localhost:8000",
+    "status": true,
+    "dependencies": []
+  },
+  {
+    "id": "BE-002",
+    "feature": "Pydantic settings configuration",
+    "track": "backend",
+    "test_criteria": ".env loads, GOOGLE_API_KEY accessible via settings",
+    "status": false,
+    "dependencies": ["BE-001"]
+  },
+  {
+    "id": "BE-003",
+    "feature": "PostgreSQL database connection",
+    "track": "backend",
+    "test_criteria": "python manage.py migrate succeeds",
+    "status": false,
+    "dependencies": ["BE-002"]
+  },
+  {
+    "id": "BE-004",
+    "feature": "Custom User model with AbstractUser",
+    "track": "backend",
+    "test_criteria": "AUTH_USER_MODEL set, createsuperuser works",
+    "status": false,
+    "dependencies": ["BE-003"]
+  },
+  {
+    "id": "BE-005",
+    "feature": "JWT auth endpoints (register, login, refresh)",
+    "track": "backend",
+    "test_criteria": "POST /api/auth/login/ returns access+refresh tokens",
+    "status": false,
+    "dependencies": ["BE-004"]
+  },
+  {
+    "id": "BE-006",
+    "feature": "Supabase client configuration",
+    "track": "backend",
+    "test_criteria": "Supabase client connects, health check passes",
+    "status": false,
+    "dependencies": ["BE-002"]
+  },
+  {
+    "id": "BE-007",
+    "feature": "Supabase pgvector table + match_documents RPC",
+    "track": "backend",
+    "test_criteria": "RPC function callable, returns similar documents",
+    "status": false,
+    "dependencies": ["BE-006"]
+  },
+  {
+    "id": "BE-008",
+    "feature": "Gemini embeddings setup",
+    "track": "backend",
+    "test_criteria": "embed_query returns 768-dim vector",
+    "status": false,
+    "dependencies": ["BE-002"]
+  },
+  {
+    "id": "BE-009",
+    "feature": "Supabase retriever class",
+    "track": "backend",
+    "test_criteria": "retrieve(query) returns list of documents",
+    "status": false,
+    "dependencies": ["BE-007", "BE-008"]
+  },
+  {
+    "id": "BE-010",
+    "feature": "AgentState TypedDict schema",
+    "track": "backend",
+    "test_criteria": "Importable with all required fields",
+    "status": false,
+    "dependencies": ["BE-001"]
+  },
+  {
+    "id": "BE-011",
+    "feature": "Gemini LLM client setup",
+    "track": "backend",
+    "test_criteria": "Simple invoke returns response",
+    "status": false,
+    "dependencies": ["BE-002"]
+  },
+  {
+    "id": "BE-012",
+    "feature": "Intent Classifier tool",
+    "track": "backend",
+    "test_criteria": "Returns agent name Literal from query",
+    "status": false,
+    "dependencies": ["BE-011"]
+  },
+  {
+    "id": "BE-013",
+    "feature": "Orchestrator Agent with routing",
+    "track": "backend",
+    "test_criteria": "Routes to correct agent based on intent",
+    "status": false,
+    "dependencies": ["BE-012", "BE-010"]
+  },
+  {
+    "id": "BE-014",
+    "feature": "RAG Agent (retrieve + generate)",
+    "track": "backend",
+    "test_criteria": "Returns answer with sources from context",
+    "status": false,
+    "dependencies": ["BE-009", "BE-011", "BE-010"]
+  },
+  {
+    "id": "BE-015",
+    "feature": "Conversation Agent",
+    "track": "backend",
+    "test_criteria": "Handles greetings, smalltalk without RAG",
+    "status": false,
+    "dependencies": ["BE-011", "BE-010"]
+  },
+  {
+    "id": "BE-016",
+    "feature": "LangGraph WorkflowManager",
+    "track": "backend",
+    "test_criteria": "Compiled graph executes full workflow",
+    "status": false,
+    "dependencies": ["BE-013", "BE-014", "BE-015"]
+  },
+  {
+    "id": "BE-017",
+    "feature": "PDF parser with PyPDF",
+    "track": "backend",
+    "test_criteria": "Extracts text from PDF file",
+    "status": false,
+    "dependencies": ["BE-001"]
+  },
+  {
+    "id": "BE-018",
+    "feature": "DOCX parser with python-docx",
+    "track": "backend",
+    "test_criteria": "Extracts text from Word file",
+    "status": false,
+    "dependencies": ["BE-001"]
+  },
+  {
+    "id": "BE-019",
+    "feature": "XLSX parser with openpyxl",
+    "track": "backend",
+    "test_criteria": "Extracts spreadsheet content",
+    "status": false,
+    "dependencies": ["BE-001"]
+  },
+  {
+    "id": "BE-020",
+    "feature": "OCR parser with Tesseract",
+    "track": "backend",
+    "test_criteria": "Extracts text from images",
+    "status": false,
+    "dependencies": ["BE-001"]
+  },
+  {
+    "id": "BE-021",
+    "feature": "Text splitter with RecursiveCharacterTextSplitter",
+    "track": "backend",
+    "test_criteria": "Returns chunks with overlap, metadata preserved",
+    "status": false,
+    "dependencies": ["BE-001"]
+  },
+  {
+    "id": "BE-022",
+    "feature": "Document Processor Agent",
+    "track": "backend",
+    "test_criteria": "Routes to correct parser, returns chunks",
+    "status": false,
+    "dependencies": ["BE-017", "BE-018", "BE-019", "BE-020", "BE-021", "BE-010"]
+  },
+  {
+    "id": "BE-023",
+    "feature": "Vector Embedding tool",
+    "track": "backend",
+    "test_criteria": "Upserts embeddings to Supabase",
+    "status": false,
+    "dependencies": ["BE-008", "BE-006"]
+  },
+  {
+    "id": "BE-024",
+    "feature": "File Upload tool",
+    "track": "backend",
+    "test_criteria": "Processes file + optionally vectorizes",
+    "status": false,
+    "dependencies": ["BE-022", "BE-023"]
+  },
+  {
+    "id": "BE-025",
+    "feature": "Web Search tool with Tavily",
+    "track": "backend",
+    "test_criteria": "Returns search results with URLs",
+    "status": false,
+    "dependencies": ["BE-002"]
+  },
+  {
+    "id": "BE-026",
+    "feature": "DB Query tool",
+    "track": "backend",
+    "test_criteria": "Executes read-only SQL, returns results",
+    "status": false,
+    "dependencies": ["BE-003"]
+  },
+  {
+    "id": "BE-027",
+    "feature": "Response Validator tool",
+    "track": "backend",
+    "test_criteria": "Returns confidence score for hallucination check",
+    "status": false,
+    "dependencies": ["BE-011"]
+  },
+  {
+    "id": "BE-028",
+    "feature": "Conversation + Message Django models",
+    "track": "backend",
+    "test_criteria": "Tables exist, CRUD operations work",
+    "status": false,
+    "dependencies": ["BE-004"]
+  },
+  {
+    "id": "BE-029",
+    "feature": "Document Django model",
+    "track": "backend",
+    "test_criteria": "Table exists with all fields",
+    "status": false,
+    "dependencies": ["BE-004"]
+  },
+  {
+    "id": "BE-030",
+    "feature": "SSE streaming chat endpoint",
+    "track": "backend",
+    "test_criteria": "POST /api/chat/ streams tokens via SSE",
+    "status": false,
+    "dependencies": ["BE-016", "BE-028"]
+  },
+  {
+    "id": "BE-031",
+    "feature": "File upload endpoint",
+    "track": "backend",
+    "test_criteria": "POST /api/documents/upload/ returns document_id",
+    "status": false,
+    "dependencies": ["BE-024", "BE-029"]
+  },
+  {
+    "id": "BE-032",
+    "feature": "Conversation history APIs",
+    "track": "backend",
+    "test_criteria": "GET /api/conversations/ lists, GET /:id returns messages",
+    "status": false,
+    "dependencies": ["BE-028"]
+  },
+  {
+    "id": "BE-033",
+    "feature": "Document management APIs",
+    "track": "backend",
+    "test_criteria": "GET /api/documents/ lists, DELETE /:id removes",
+    "status": false,
+    "dependencies": ["BE-029"]
+  },
+  {
+    "id": "BE-034",
+    "feature": "Admin stats + users APIs",
+    "track": "backend",
+    "test_criteria": "GET /api/admin/stats/ returns data (is_staff only)",
+    "status": false,
+    "dependencies": ["BE-005"]
+  },
+  {
+    "id": "FE-001",
+    "feature": "Next.js 14 project setup with App Router",
+    "track": "frontend",
+    "test_criteria": "npm run dev renders page at localhost:3000",
+    "status": false,
+    "dependencies": []
+  },
+  {
+    "id": "FE-002",
+    "feature": "Tailwind + theme provider setup",
+    "track": "frontend",
+    "test_criteria": "Dark/light toggle works, theme persists",
+    "status": false,
+    "dependencies": ["FE-001"]
+  },
+  {
+    "id": "FE-003",
+    "feature": "Auth context + JWT token management",
+    "track": "frontend",
+    "test_criteria": "Tokens stored, refresh logic works",
+    "status": false,
+    "dependencies": ["FE-001", "BE-005"]
+  },
+  {
+    "id": "FE-004",
+    "feature": "Login page with form validation",
+    "track": "frontend",
+    "test_criteria": "/login renders, validation errors display, success redirects",
+    "status": false,
+    "dependencies": ["FE-003"]
+  },
+  {
+    "id": "FE-005",
+    "feature": "Register page with form validation",
+    "track": "frontend",
+    "test_criteria": "/register renders, password requirements shown",
+    "status": false,
+    "dependencies": ["FE-003"]
+  },
+  {
+    "id": "FE-006",
+    "feature": "Protected route middleware",
+    "track": "frontend",
+    "test_criteria": "Unauthenticated /dashboard redirects to /login",
+    "status": false,
+    "dependencies": ["FE-003"]
+  },
+  {
+    "id": "FE-007",
+    "feature": "Dashboard layout with sidebar",
+    "track": "frontend",
+    "test_criteria": "/dashboard renders layout with collapsible sidebar",
+    "status": false,
+    "dependencies": ["FE-006"]
+  },
+  {
+    "id": "FE-008",
+    "feature": "Sidebar conversation list",
+    "track": "frontend",
+    "test_criteria": "Lists past conversations, New Chat button works",
+    "status": false,
+    "dependencies": ["FE-007", "BE-032"]
+  },
+  {
+    "id": "FE-009",
+    "feature": "Chat message list component",
+    "track": "frontend",
+    "test_criteria": "Messages render with user/assistant styling",
+    "status": false,
+    "dependencies": ["FE-007"]
+  },
+  {
+    "id": "FE-010",
+    "feature": "Chat input with send button",
+    "track": "frontend",
+    "test_criteria": "Enter sends, Shift+Enter newline, loading state",
+    "status": false,
+    "dependencies": ["FE-009"]
+  },
+  {
+    "id": "FE-011",
+    "feature": "SSE streaming message display",
+    "track": "frontend",
+    "test_criteria": "Tokens stream progressively into UI",
+    "status": false,
+    "dependencies": ["FE-010", "BE-030"]
+  },
+  {
+    "id": "FE-012",
+    "feature": "Markdown rendering in messages",
+    "track": "frontend",
+    "test_criteria": "Code blocks, lists, links render correctly",
+    "status": false,
+    "dependencies": ["FE-009"]
+  },
+  {
+    "id": "FE-013",
+    "feature": "Source citations display",
+    "track": "frontend",
+    "test_criteria": "Sources shown below answer as expandable list",
+    "status": false,
+    "dependencies": ["FE-011"]
+  },
+  {
+    "id": "FE-014",
+    "feature": "File upload dropzone",
+    "track": "frontend",
+    "test_criteria": "Drag-drop accepts files, shows preview",
+    "status": false,
+    "dependencies": ["FE-010"]
+  },
+  {
+    "id": "FE-015",
+    "feature": "Vectorization toggle switch",
+    "track": "frontend",
+    "test_criteria": "Toggle visible, ON=store in DB, OFF=session only",
+    "status": false,
+    "dependencies": ["FE-014"]
+  },
+  {
+    "id": "FE-016",
+    "feature": "Upload progress indicator",
+    "track": "frontend",
+    "test_criteria": "Progress bar updates, success/error toast",
+    "status": false,
+    "dependencies": ["FE-014", "BE-031"]
+  },
+  {
+    "id": "FE-017",
+    "feature": "Profile page",
+    "track": "frontend",
+    "test_criteria": "/profile shows user info, edit form works",
+    "status": false,
+    "dependencies": ["FE-007"]
+  },
+  {
+    "id": "FE-018",
+    "feature": "Settings page",
+    "track": "frontend",
+    "test_criteria": "/settings shows theme toggle, preferences persist",
+    "status": false,
+    "dependencies": ["FE-002", "FE-007"]
+  },
+  {
+    "id": "FE-019",
+    "feature": "Documents management page",
+    "track": "frontend",
+    "test_criteria": "/documents lists uploads with delete option",
+    "status": false,
+    "dependencies": ["FE-007", "BE-033"]
+  },
+  {
+    "id": "FE-020",
+    "feature": "Admin dashboard page",
+    "track": "frontend",
+    "test_criteria": "/admin shows stats cards (is_staff only)",
+    "status": false,
+    "dependencies": ["FE-006", "BE-034"]
+  },
+  {
+    "id": "FE-021",
+    "feature": "Admin users page",
+    "track": "frontend",
+    "test_criteria": "/admin/users shows paginated user table",
+    "status": false,
+    "dependencies": ["FE-020"]
+  },
+  {
+    "id": "DP-001",
+    "feature": "Django production settings (CORS, security)",
+    "track": "deployment",
+    "test_criteria": "CORS configured, DEBUG=0, SECURE_SSL_REDIRECT",
+    "status": false,
+    "dependencies": ["BE-034"]
+  },
+  {
+    "id": "DP-002",
+    "feature": "Railway Dockerfile for Django",
+    "track": "deployment",
+    "test_criteria": "Docker build + gunicorn + healthcheck pass",
+    "status": false,
+    "dependencies": ["DP-001"]
+  },
+  {
+    "id": "DP-003",
+    "feature": "Next.js production build",
+    "track": "deployment",
+    "test_criteria": "npm run build succeeds",
+    "status": false,
+    "dependencies": ["FE-021"]
+  },
+  {
+    "id": "DP-004",
+    "feature": "Vercel deployment configuration",
+    "track": "deployment",
+    "test_criteria": "Preview works, env vars set",
+    "status": false,
+    "dependencies": ["DP-003"]
+  }
+]

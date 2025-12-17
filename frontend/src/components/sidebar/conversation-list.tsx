@@ -7,11 +7,13 @@ import { MessageSquare, Trash2, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useChatStore } from '@/lib/stores/chat-store';
 import { apiClient } from '@/lib/api/client';
+import { useSidebar } from './sidebar';
 import toast from 'react-hot-toast';
 import type { Conversation } from '@/types';
 
 export function ConversationList() {
   const pathname = usePathname();
+  const { collapsed } = useSidebar();
   const { conversations, setConversations, removeConversation } = useChatStore();
 
   useEffect(() => {
@@ -44,9 +46,21 @@ export function ConversationList() {
     }
   };
 
+  // Empty state
   if (conversations.length === 0) {
+    if (collapsed) {
+      // Collapsed empty state - just a subtle icon
+      return (
+        <div className="flex justify-center py-4">
+          <div className="p-2 rounded-lg bg-accent/5">
+            <Sparkles className="h-4 w-4 text-muted-foreground" />
+          </div>
+        </div>
+      );
+    }
+
     return (
-      <div className="p-6 text-center">
+      <div className="p-4 text-center">
         <div className="inline-flex p-3 rounded-xl glass mb-3">
           <Sparkles className="h-5 w-5 text-accent" />
         </div>
@@ -60,8 +74,45 @@ export function ConversationList() {
     );
   }
 
+  // Collapsed conversation list - show only icons
+  if (collapsed) {
+    return (
+      <div className="py-2 space-y-1">
+        {conversations.slice(0, 5).map((conversation) => {
+          const isActive = pathname === `/chat/${conversation.id}`;
+          return (
+            <Link
+              key={conversation.id}
+              href={`/chat/${conversation.id}`}
+              className={cn(
+                'flex justify-center p-2.5 mx-1 rounded-xl transition-all duration-300',
+                isActive
+                  ? 'glass glow-sm'
+                  : 'hover:bg-accent/5'
+              )}
+              title={conversation.title || 'New Conversation'}
+            >
+              <MessageSquare className={cn(
+                'h-4 w-4 transition-colors',
+                isActive ? 'text-accent' : 'text-muted-foreground'
+              )} />
+            </Link>
+          );
+        })}
+        {conversations.length > 5 && (
+          <div className="flex justify-center py-1">
+            <span className="text-[10px] text-muted-foreground">
+              +{conversations.length - 5}
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Expanded conversation list
   return (
-    <div className="p-2 space-y-1">
+    <div className="py-2 space-y-1">
       {conversations.map((conversation, index) => {
         const isActive = pathname === `/chat/${conversation.id}`;
         return (
@@ -69,7 +120,7 @@ export function ConversationList() {
             key={conversation.id}
             href={`/chat/${conversation.id}`}
             className={cn(
-              'group relative flex items-center gap-3 px-3 py-3 rounded-xl',
+              'group relative flex items-center gap-3 px-3 py-2.5 rounded-xl',
               'transition-all duration-300 animate-fade-up',
               isActive
                 ? 'glass glow-sm'
@@ -79,40 +130,38 @@ export function ConversationList() {
           >
             {/* Active indicator */}
             {isActive && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-gradient-to-b from-accent to-accent-secondary" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 rounded-r-full bg-gradient-to-b from-accent to-accent-secondary" />
             )}
 
             <div className={cn(
-              'p-2 rounded-lg transition-all duration-300',
+              'p-1.5 rounded-lg transition-all duration-300 flex-shrink-0',
               isActive
                 ? 'bg-accent/20'
                 : 'bg-accent/5 group-hover:bg-accent/10'
             )}>
               <MessageSquare className={cn(
-                'h-4 w-4 transition-colors',
+                'h-3.5 w-3.5 transition-colors',
                 isActive ? 'text-accent' : 'text-muted-foreground group-hover:text-accent'
               )} />
             </div>
 
-            <div className="flex-1 min-w-0">
-              <span className={cn(
-                'block text-sm truncate transition-colors',
-                isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
-              )}>
-                {conversation.title || 'New Conversation'}
-              </span>
-            </div>
+            <span className={cn(
+              'flex-1 text-sm truncate transition-colors',
+              isActive ? 'text-foreground' : 'text-muted-foreground group-hover:text-foreground'
+            )}>
+              {conversation.title || 'New Conversation'}
+            </span>
 
             <button
               onClick={(e) => handleDelete(e, conversation.id)}
               className={cn(
-                'p-1.5 rounded-lg transition-all duration-300',
+                'p-1.5 rounded-lg transition-all duration-300 flex-shrink-0',
                 'opacity-0 group-hover:opacity-100',
                 'hover:bg-error/10 text-muted-foreground hover:text-error'
               )}
               aria-label="Delete conversation"
             >
-              <Trash2 className="h-4 w-4" />
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
           </Link>
         );

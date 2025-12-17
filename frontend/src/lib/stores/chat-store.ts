@@ -8,6 +8,8 @@ interface ChatState {
   isLoading: boolean;
   isStreaming: boolean;
   streamingContent: string;
+  suggestedPrompt: string | null;
+  focusInput: boolean;
 
   // Actions
   setConversations: (conversations: Conversation[]) => void;
@@ -21,6 +23,8 @@ interface ChatState {
   setStreaming: (streaming: boolean) => void;
   setStreamingContent: (content: string) => void;
   appendStreamingContent: (content: string) => void;
+  setSuggestedPrompt: (prompt: string | null) => void;
+  setFocusInput: (focus: boolean) => void;
   reset: () => void;
 }
 
@@ -31,6 +35,8 @@ const initialState = {
   isLoading: false,
   isStreaming: false,
   streamingContent: '',
+  suggestedPrompt: null,
+  focusInput: false,
 };
 
 export const useChatStore = create<ChatState>((set) => ({
@@ -80,6 +86,10 @@ export const useChatStore = create<ChatState>((set) => ({
     set((state) => ({
       streamingContent: state.streamingContent + content,
     })),
+
+  setSuggestedPrompt: (suggestedPrompt) => set({ suggestedPrompt }),
+
+  setFocusInput: (focusInput) => set({ focusInput }),
 
   reset: () => set(initialState),
 }));

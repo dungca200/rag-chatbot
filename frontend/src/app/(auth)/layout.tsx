@@ -1,4 +1,7 @@
+'use client';
+
 import { ThemeToggle } from '@/components/ui/theme-toggle';
+import { CursorGlow } from '@/components/ui/cursor-glow';
 import { Zap } from 'lucide-react';
 
 export default function AuthLayout({
@@ -8,6 +11,9 @@ export default function AuthLayout({
 }) {
   return (
     <div className="relative min-h-screen flex flex-col overflow-hidden">
+      {/* Cursor glow effect */}
+      <CursorGlow />
+
       {/* Cosmic background */}
       <div className="cosmic-bg" />
       <div className="noise-overlay" />
@@ -18,7 +24,7 @@ export default function AuthLayout({
       <div className="fixed bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-accent-secondary/20 blur-[80px] -z-10 animate-float" style={{ animationDelay: '1s' }} />
 
       {/* Theme toggle */}
-      <div className="absolute top-6 right-6 z-10">
+      <div className="absolute top-6 right-6 z-50">
         <ThemeToggle />
       </div>
 

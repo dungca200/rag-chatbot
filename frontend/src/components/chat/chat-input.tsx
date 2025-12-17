@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useRef, KeyboardEvent } from 'react';
+import { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { Send, Paperclip, Loader2, X, FileText, Image, FileSpreadsheet, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { VectorizationToggle } from './vectorization-toggle';
+import { useChatStore } from '@/lib/stores/chat-store';
 
 interface ChatInputProps {
   onSend: (message: string, file?: File, persistEmbeddings?: boolean) => void;
@@ -36,6 +37,32 @@ export function ChatInput({ onSend, isLoading, disabled }: ChatInputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { suggestedPrompt, focusInput, setSuggestedPrompt, setFocusInput } = useChatStore();
+
+  // Handle suggested prompt from store
+  useEffect(() => {
+    if (suggestedPrompt) {
+      setMessage(suggestedPrompt);
+      setSuggestedPrompt(null);
+      // Focus and move cursor to end
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+          textareaRef.current.selectionStart = textareaRef.current.value.length;
+          textareaRef.current.selectionEnd = textareaRef.current.value.length;
+        }
+      }, 0);
+    }
+  }, [suggestedPrompt, setSuggestedPrompt]);
+
+  // Handle focus request from store
+  useEffect(() => {
+    if (focusInput) {
+      textareaRef.current?.focus();
+      setFocusInput(false);
+    }
+  }, [focusInput, setFocusInput]);
 
   const handleSubmit = () => {
     if ((!message.trim() && !file) || isLoading || disabled) return;

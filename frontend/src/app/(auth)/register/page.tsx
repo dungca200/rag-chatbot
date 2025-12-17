@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 const registerSchema = z.object({
   username: z.string()
@@ -105,12 +105,11 @@ export default function RegisterPage() {
 
           <Button
             type="submit"
-            className="w-full group"
+            className="w-full"
             size="lg"
             isLoading={isLoading}
           >
             Create account
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
         </form>
 

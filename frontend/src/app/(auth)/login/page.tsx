@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Zap, ArrowRight } from 'lucide-react';
+import { Zap } from 'lucide-react';
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -81,12 +81,11 @@ export default function LoginPage() {
 
           <Button
             type="submit"
-            className="w-full group"
+            className="w-full"
             size="lg"
             isLoading={isLoading}
           >
             Sign in
-            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
           </Button>
         </form>
 

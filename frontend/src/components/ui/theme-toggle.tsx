@@ -10,7 +10,7 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
-  const { theme, setTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -25,9 +25,11 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     );
   }
 
+  const isDark = resolvedTheme === 'dark';
+
   return (
     <button
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
       className={cn(
         'relative p-2.5 rounded-xl glass',
         'hover:glow-sm transition-all duration-300',
@@ -37,7 +39,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
       aria-label="Toggle theme"
     >
       <div className="relative">
-        {theme === 'dark' ? (
+        {isDark ? (
           <Sun className="h-5 w-5 transition-transform hover:rotate-45 duration-300" />
         ) : (
           <Moon className="h-5 w-5 transition-transform hover:-rotate-12 duration-300" />

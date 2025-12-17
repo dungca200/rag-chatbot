@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { MessageBubble } from './message-bubble';
 import { useChatStore } from '@/lib/stores/chat-store';
 import { Sparkles, FileUp, Globe, MessageCircle, Zap, ArrowRight } from 'lucide-react';
@@ -10,30 +11,61 @@ interface MessageListProps {
   messages: Message[];
 }
 
-const suggestions = [
+type SuggestionAction = 'documents' | 'web-search' | 'conversation';
+
+const suggestions: {
+  icon: typeof FileUp;
+  title: string;
+  description: string;
+  gradient: string;
+  action: SuggestionAction;
+  prompt?: string;
+}[] = [
   {
     icon: FileUp,
     title: 'Analyze Documents',
     description: 'Upload PDFs, DOCX, or images for intelligent analysis',
     gradient: 'from-accent to-cyan-400',
+    action: 'documents',
   },
   {
     icon: Globe,
     title: 'Search the Web',
     description: 'Get real-time information from across the internet',
     gradient: 'from-accent-secondary to-purple-400',
+    action: 'web-search',
+    prompt: 'Search the web for ',
   },
   {
     icon: MessageCircle,
     title: 'Have a Conversation',
     description: 'Ask questions, brainstorm ideas, or get assistance',
     gradient: 'from-accent to-accent-secondary',
+    action: 'conversation',
   },
 ];
 
 export function MessageList({ messages }: MessageListProps) {
   const endRef = useRef<HTMLDivElement>(null);
-  const { isStreaming, streamingContent } = useChatStore();
+  const router = useRouter();
+  const { isStreaming, streamingContent, setSuggestedPrompt, setFocusInput } = useChatStore();
+
+  const handleSuggestionClick = (action: SuggestionAction, prompt?: string) => {
+    switch (action) {
+      case 'documents':
+        router.push('/documents');
+        break;
+      case 'web-search':
+        if (prompt) {
+          setSuggestedPrompt(prompt);
+        }
+        setFocusInput(true);
+        break;
+      case 'conversation':
+        setFocusInput(true);
+        break;
+    }
+  };
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -74,9 +106,10 @@ export function MessageList({ messages }: MessageListProps) {
           {/* Suggestion cards */}
           <div className="grid gap-4">
             {suggestions.map((suggestion, index) => (
-              <div
+              <button
                 key={index}
-                className="group relative p-5 rounded-2xl glass-card text-left cursor-pointer overflow-hidden animate-fade-up"
+                onClick={() => handleSuggestionClick(suggestion.action, suggestion.prompt)}
+                className="group relative p-5 rounded-2xl glass-card text-left cursor-pointer overflow-hidden animate-fade-up w-full"
                 style={{ animationDelay: `${(index + 1) * 100}ms` }}
               >
                 {/* Hover gradient overlay */}
@@ -105,7 +138,7 @@ export function MessageList({ messages }: MessageListProps) {
 
                   <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-accent group-hover:translate-x-1 transition-all" />
                 </div>
-              </div>
+              </button>
             ))}
           </div>
 

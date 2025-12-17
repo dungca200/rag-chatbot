@@ -4,10 +4,34 @@ import { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { useChatStore } from '@/lib/stores/chat-store';
-import { useAuthStore } from '@/lib/stores/auth-store';
-import type { Message, Conversation } from '@/types';
+import type { Message, Conversation, AuthTokens } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+// Helper to get fresh tokens from localStorage (synced by apiClient)
+function getFreshTokens(): AuthTokens | null {
+  if (typeof window === 'undefined') return null;
+  const stored = localStorage.getItem('tokens');
+  return stored ? JSON.parse(stored) : null;
+}
+
+// Helper to refresh token
+async function refreshAccessToken(refreshToken: string): Promise<string | null> {
+  try {
+    const response = await fetch(`${API_URL}/api/auth/refresh/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    // Update localStorage
+    localStorage.setItem('tokens', JSON.stringify({ access: data.access, refresh: refreshToken }));
+    return data.access;
+  } catch {
+    return null;
+  }
+}
 
 interface SSEData {
   id?: string;
@@ -22,7 +46,6 @@ interface SSEData {
 
 export function useChat() {
   const router = useRouter();
-  const { tokens } = useAuthStore();
   const {
     messages,
     setMessages,
@@ -43,7 +66,9 @@ export function useChat() {
     conversationId?: string,
     persistEmbeddings: boolean = true
   ) => {
-    if (!tokens?.access) {
+    // Get fresh tokens from localStorage
+    let currentTokens = getFreshTokens();
+    if (!currentTokens?.access) {
       toast.error('Please login first');
       return;
     }
@@ -83,7 +108,7 @@ export function useChat() {
         const uploadResponse = await fetch(`${API_URL}/api/documents/upload/`, {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${tokens.access}`,
+            'Authorization': `Bearer ${currentTokens.access}`,
           },
           body: formData,
         });
@@ -96,15 +121,30 @@ export function useChat() {
         }
       }
 
-      // Send SSE request
-      const response = await fetch(`${API_URL}/api/chat/`, {
+      // Send SSE request with retry on 401
+      let response = await fetch(`${API_URL}/api/chat/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tokens.access}`,
+          'Authorization': `Bearer ${currentTokens.access}`,
         },
         body: JSON.stringify(body),
       });
+
+      // Handle 401 - try refresh token
+      if (response.status === 401 && currentTokens.refresh) {
+        const newAccessToken = await refreshAccessToken(currentTokens.refresh);
+        if (newAccessToken) {
+          response = await fetch(`${API_URL}/api/chat/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${newAccessToken}`,
+            },
+            body: JSON.stringify(body),
+          });
+        }
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -206,7 +246,6 @@ export function useChat() {
       setStreamingContent('');
     }
   }, [
-    tokens,
     currentConversationId,
     addMessage,
     setLoading,
@@ -219,13 +258,14 @@ export function useChat() {
   ]);
 
   const loadConversation = useCallback(async (conversationId: string) => {
-    if (!tokens?.access) return;
+    const currentTokens = getFreshTokens();
+    if (!currentTokens?.access) return;
 
     setLoading(true);
     try {
       const response = await fetch(`${API_URL}/api/chat/conversations/${conversationId}/`, {
         headers: {
-          'Authorization': `Bearer ${tokens.access}`,
+          'Authorization': `Bearer ${currentTokens.access}`,
         },
       });
 
@@ -244,7 +284,7 @@ export function useChat() {
     } finally {
       setLoading(false);
     }
-  }, [tokens, setLoading, setCurrentConversationId, setMessages]);
+  }, [setLoading, setCurrentConversationId, setMessages]);
 
   const startNewChat = useCallback(() => {
     setCurrentConversationId(null);

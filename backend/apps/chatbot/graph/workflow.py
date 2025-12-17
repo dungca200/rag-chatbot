@@ -10,7 +10,8 @@ from apps.chatbot.agents import (
     route_to_agent,
     rag_agent_node,
     conversation_agent_node,
-    document_agent_node
+    document_agent_node,
+    web_search_agent_node
 )
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ class WorkflowManager:
         workflow.add_node("rag_agent", rag_agent_node)
         workflow.add_node("conversation_agent", conversation_agent_node)
         workflow.add_node("document_agent", document_agent_node)
+        workflow.add_node("web_search_agent", web_search_agent_node)
 
         # Set entry point
         workflow.set_entry_point("orchestrator")
@@ -44,7 +46,8 @@ class WorkflowManager:
             {
                 "rag_agent": "rag_agent",
                 "conversation_agent": "conversation_agent",
-                "document_agent": "document_agent"
+                "document_agent": "document_agent",
+                "web_search_agent": "web_search_agent"
             }
         )
 
@@ -52,6 +55,7 @@ class WorkflowManager:
         workflow.add_edge("rag_agent", END)
         workflow.add_edge("conversation_agent", END)
         workflow.add_edge("document_agent", END)
+        workflow.add_edge("web_search_agent", END)
 
         # Compile
         return workflow.compile()

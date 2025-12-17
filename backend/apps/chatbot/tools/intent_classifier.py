@@ -9,13 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 # Agent types for routing
-AgentType = Literal["rag", "conversation", "document"]
+AgentType = Literal["rag", "conversation", "document", "web_search"]
 
 
 class IntentClassification(BaseModel):
     """Schema for intent classification output."""
     agent: AgentType = Field(
-        description="The agent that should handle this query: 'rag' for knowledge/document questions, 'conversation' for greetings/smalltalk, 'document' for file processing"
+        description="The agent to handle this query"
     )
     rationale: str = Field(
         description="Brief explanation of why this agent was selected"
@@ -25,9 +25,15 @@ class IntentClassification(BaseModel):
 CLASSIFICATION_PROMPT = """You are an intent classifier for a RAG chatbot. Analyze the user query and determine which agent should handle it.
 
 Available agents:
-- rag: For questions that require searching documents/knowledge base, factual queries, information retrieval
-- conversation: For greetings, smalltalk, general chat, help requests, clarifications
-- document: For file upload requests, document processing, asking about uploaded files
+- rag: ONLY for questions about user's UPLOADED documents (e.g., "What does my PDF say about X?", "Summarize my uploaded file", "Find in my document")
+- web_search: For general knowledge questions, facts, current events, definitions, explanations (e.g., "What is the powerhouse of a cell?", "Who is the president?", "How does X work?")
+- conversation: For greetings, smalltalk, personal chat, help requests, questions about the bot itself (e.g., "Hello", "How are you?", "What can you do?")
+- document: For file upload/processing requests (e.g., "Upload a file", "Process this document")
+
+IMPORTANT:
+- Use "rag" ONLY when the user explicitly refers to their uploaded documents
+- Use "web_search" for any factual/knowledge question that doesn't mention uploaded documents
+- Default to "conversation" for ambiguous social queries
 
 User Query: {query}
 

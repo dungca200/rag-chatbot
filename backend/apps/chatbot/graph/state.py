@@ -19,7 +19,7 @@ class AgentState(TypedDict):
     chat_history: List[ChatMessage]  # Previous messages in conversation
 
     # Routing
-    target_agent: Optional[Literal["rag", "conversation", "document"]]
+    target_agent: Optional[Literal["rag", "conversation", "document", "web_search"]]
 
     # RAG context
     retrieved_context: List[Dict]

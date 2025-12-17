@@ -55,7 +55,8 @@ def route_to_agent(state: AgentState) -> str:
     node_map = {
         "rag": "rag_agent",
         "conversation": "conversation_agent",
-        "document": "document_agent"
+        "document": "document_agent",
+        "web_search": "web_search_agent"
     }
 
     return node_map.get(target, "conversation_agent")

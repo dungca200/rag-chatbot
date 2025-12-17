@@ -60,7 +60,7 @@
     "feature": "Gemini embeddings setup",
     "track": "backend",
     "test_criteria": "embed_query returns 768-dim vector",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-002"]
   },
   {
@@ -84,7 +84,7 @@
     "feature": "Gemini LLM client setup",
     "track": "backend",
     "test_criteria": "Simple invoke returns response",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-002"]
   },
   {

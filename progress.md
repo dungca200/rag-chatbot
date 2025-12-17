@@ -47,11 +47,20 @@
 - Created match_documents, get_document_by_parent_key, cleanup_session_documents RPCs
 - RPC function callable and working
 
+### BE-008: Gemini embeddings setup ✅
+- Created gemini_client.py with embed_query, embed_documents
+- Using text-embedding-004 model (768-dim vectors)
+- check_gemini management command for testing
+
+### BE-011: Gemini LLM client setup ✅
+- ChatGoogleGenerativeAI with gemini-2.0-flash model
+- generate_response helper function
+
 ---
 
 ## Current Sprint
 
-Phase 3: Supabase Integration - BE-008 next (Gemini embeddings)
+Phase 4: Agent Framework - BE-009, BE-010 next
 
 ---
 
@@ -68,3 +77,5 @@ Phase 3: Supabase Integration - BE-008 next (Gemini embeddings)
 - **BE-005**: JWT auth endpoints ✅
 - **BE-006**: Supabase client configuration ✅
 - **BE-007**: Supabase pgvector + match_documents RPC ✅
+- **BE-008**: Gemini embeddings (768-dim) ✅
+- **BE-011**: Gemini LLM client ✅

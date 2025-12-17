@@ -71,11 +71,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
-# Database - SQLite for initial setup, will switch to PostgreSQL in BE-003
+# Database - PostgreSQL
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env_settings.DB_NAME,
+        'USER': env_settings.DB_USER,
+        'PASSWORD': env_settings.DB_PASSWORD,
+        'HOST': env_settings.DB_HOST,
+        'PORT': env_settings.DB_PORT,
     }
 }
 

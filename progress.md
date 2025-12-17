@@ -20,13 +20,17 @@
 - All env vars: Django, DB, Supabase, Gemini, Tavily, CORS
 - Integrated with Django settings via `env_settings`
 - Added `check_settings` management command
-- `.env` auto-loads, `GOOGLE_API_KEY` accessible via `settings.google_api_key`
+
+### BE-003: PostgreSQL database connection ✅
+- Updated DATABASES config to use PostgreSQL
+- Uses Pydantic settings for DB credentials
+- `python manage.py migrate` succeeds
 
 ---
 
 ## Current Sprint
 
-Phase 1: Infrastructure Setup - BE-003 next (PostgreSQL connection)
+Phase 2: Auth System - BE-004 next (Custom User model)
 
 ---
 
@@ -38,3 +42,4 @@ Phase 1: Infrastructure Setup - BE-003 next (PostgreSQL connection)
 - Initialized git repository
 - **BE-001**: Django project structure created ✅
 - **BE-002**: Pydantic settings configuration ✅
+- **BE-003**: PostgreSQL database connection ✅

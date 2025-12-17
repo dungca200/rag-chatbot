@@ -20,7 +20,7 @@
     "feature": "PostgreSQL database connection",
     "track": "backend",
     "test_criteria": "python manage.py migrate succeeds",
-    "status": false,
+    "status": true,
     "dependencies": ["BE-002"]
   },
   {

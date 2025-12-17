@@ -20,7 +20,7 @@ export function useAuth() {
         id: response.user.id,
         username: response.user.username,
         email: response.user.email,
-        is_staff: false, // Will be fetched from profile
+        is_staff: response.user.is_staff,
       };
       storeLogin(userData, response.tokens);
       toast.success('Login successful');

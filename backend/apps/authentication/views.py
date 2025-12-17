@@ -28,7 +28,23 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
-            response.data = {'success': True, **response.data}
+            # Get user from username in request
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            user = User.objects.get(username=request.data.get('username'))
+            response.data = {
+                'success': True,
+                'tokens': {
+                    'access': response.data['access'],
+                    'refresh': response.data['refresh'],
+                },
+                'user': {
+                    'id': str(user.id),
+                    'username': user.username,
+                    'email': user.email,
+                    'is_staff': user.is_staff,
+                },
+            }
         else:
             response.data = {'success': False, 'message': 'Login failed', 'errors': response.data}
         return response

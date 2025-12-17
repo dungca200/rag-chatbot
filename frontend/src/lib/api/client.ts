@@ -126,11 +126,11 @@ class ApiClient {
   }
 
   // Auth methods
-  async login(username: string, password: string): Promise<{ user: { id: string; username: string; email: string }; tokens: AuthTokens }> {
+  async login(username: string, password: string): Promise<{ user: { id: string; username: string; email: string; is_staff: boolean }; tokens: AuthTokens }> {
     const response = await this.post<{
       success: boolean;
       tokens: AuthTokens;
-      user: { id: string; username: string; email: string };
+      user: { id: string; username: string; email: string; is_staff: boolean };
     }>('/api/auth/login/', { username, password });
 
     if (response.tokens) {

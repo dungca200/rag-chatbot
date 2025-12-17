@@ -18,8 +18,8 @@ class Settings(BaseSettings):
     SUPABASE_URL: str
     SUPABASE_KEY: str
 
-    # Gemini (Google AI)
-    GOOGLE_API_KEY: str
+    # OpenAI
+    OPENAI_API_KEY: str
 
     # Tavily (Web Search)
     TAVILY_API_KEY: str

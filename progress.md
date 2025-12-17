@@ -1,6 +1,6 @@
 # Progress Log
 
-## Status: In Progress
+## Status: COMPLETE
 
 ---
 
@@ -354,3 +354,28 @@ Phase 12: Deployment - ALL COMPLETE ✅
 - **DP-002**: Railway Dockerfile + healthcheck + railway.json ✅
 - **DP-003**: Next.js production build passes ✅
 - **DP-004**: Vercel deployment configuration (vercel.json) ✅
+
+---
+
+## Project Summary
+
+**Total Features**: 55 (34 backend, 21 frontend, 4 deployment)
+**All Features**: COMPLETE ✅
+
+### Deployment Checklist
+
+**Railway (Django Backend)**:
+1. Create new Railway project
+2. Connect GitHub repo, set root to `backend/`
+3. Add env vars from `.env.example`
+4. Deploy - healthcheck at `/api/health/`
+
+**Vercel (Next.js Frontend)**:
+1. Import repo to Vercel
+2. Set root to `frontend/`
+3. Add env var: `NEXT_PUBLIC_API_URL=https://your-railway-app.railway.app`
+4. Deploy
+
+**Supabase**:
+- Run SQL migration in `context/supabase/schema.sql`
+- Enable pgvector extension

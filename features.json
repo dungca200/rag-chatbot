@@ -468,7 +468,7 @@
     "feature": "Vercel deployment configuration",
     "track": "deployment",
     "test_criteria": "Preview works, env vars set",
-    "status": false,
+    "status": true,
     "dependencies": ["DP-003"]
   }
 ]

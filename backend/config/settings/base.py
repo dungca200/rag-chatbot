@@ -15,9 +15,9 @@ sys.path.insert(0, str(BASE_DIR))
 from settings import settings as env_settings
 
 # Core Django settings from Pydantic
-SECRET_KEY = env_settings.django_secret_key
-DEBUG = env_settings.django_debug
-ALLOWED_HOSTS = env_settings.allowed_hosts_list
+SECRET_KEY = env_settings.DJANGO_SECRET_KEY
+DEBUG = bool(env_settings.DJANGO_DEBUG)
+ALLOWED_HOSTS = [h.strip() for h in env_settings.DJANGO_ALLOWED_HOSTS.split(",") if h.strip()]
 
 # Application definition
 INSTALLED_APPS = [
@@ -122,7 +122,7 @@ SIMPLE_JWT = {
 
 # CORS Settings
 CORS_ALLOW_ALL_ORIGINS = DEBUG
-CORS_ALLOWED_ORIGINS = env_settings.cors_origins_list
+CORS_ALLOWED_ORIGINS = [o.strip() for o in env_settings.CORS_ALLOWED_ORIGINS.split(",") if o.strip()]
 
 # Custom User Model (will be created in BE-004)
 # AUTH_USER_MODEL = 'authentication.User'

@@ -42,6 +42,16 @@ def stream_chat_response(user, message, conversation_id=None, document_key=None,
         conversation = Conversation.objects.create(user=user)
         yield sse_message("conversation", {"id": str(conversation.id)})
 
+    # Fetch previous messages for context (last 10)
+    previous_messages = Message.objects.filter(
+        conversation=conversation
+    ).order_by('created_at')[:10]
+
+    chat_history = [
+        {"role": msg.role, "content": msg.content}
+        for msg in previous_messages
+    ]
+
     # Save user message
     user_message = Message.objects.create(
         conversation=conversation,
@@ -64,7 +74,8 @@ def stream_chat_response(user, message, conversation_id=None, document_key=None,
             user_id=str(user.id),
             thread_id=str(conversation.id),
             document_key=document_key,
-            persist_embeddings=persist_embeddings
+            persist_embeddings=persist_embeddings,
+            chat_history=chat_history
         )
 
         response_content = result.get("response", "")

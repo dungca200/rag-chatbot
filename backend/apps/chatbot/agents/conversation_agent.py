@@ -1,7 +1,7 @@
 import logging
-from typing import Dict
+from typing import Dict, List
 
-from apps.chatbot.graph.state import AgentState
+from apps.chatbot.graph.state import AgentState, ChatMessage
 from core.clients.gemini_client import get_chat_model
 
 logger = logging.getLogger(__name__)
@@ -15,13 +15,31 @@ Your role:
 - Help users understand how to use the system
 - Guide users to upload documents or ask questions about their documents
 - Be concise but friendly
+- You have access to the conversation history below
 
 You do NOT have access to any documents. If users ask document-related questions,
 politely guide them to upload a document first or rephrase their question.
 
+{history_section}
+
 User message: {query}
 
 Response:"""
+
+
+def _format_chat_history(history: List[ChatMessage], max_messages: int = 10) -> str:
+    """Format chat history for the prompt."""
+    if not history:
+        return ""
+
+    # Take last N messages
+    recent = history[-max_messages:]
+    formatted = ["Conversation History:"]
+    for msg in recent:
+        role = "User" if msg["role"] == "user" else "Assistant"
+        formatted.append(f"{role}: {msg['content']}")
+
+    return "\n".join(formatted)
 
 
 def conversation_agent_node(state: AgentState) -> Dict:
@@ -32,13 +50,20 @@ def conversation_agent_node(state: AgentState) -> Dict:
         Dict with responses and logs
     """
     query = state.get("query", "")
+    chat_history = state.get("chat_history", [])
 
     logger.info(f"Conversation Agent processing: {query[:50]}...")
+
+    # Format history
+    history_section = _format_chat_history(chat_history)
 
     # Generate response
     try:
         llm = get_chat_model(temperature=0.7)
-        prompt = CONVERSATION_SYSTEM_PROMPT.format(query=query)
+        prompt = CONVERSATION_SYSTEM_PROMPT.format(
+            query=query,
+            history_section=history_section
+        )
         response = llm.invoke(prompt)
         answer = response.content
     except Exception as e:

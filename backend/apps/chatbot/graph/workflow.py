@@ -62,7 +62,8 @@ class WorkflowManager:
         user_id: str,
         thread_id: Optional[str] = None,
         document_key: Optional[str] = None,
-        persist_embeddings: bool = False
+        persist_embeddings: bool = False,
+        chat_history: Optional[list] = None
     ) -> Dict:
         """
         Process a user query through the workflow.
@@ -73,6 +74,7 @@ class WorkflowManager:
             thread_id: Conversation thread ID (generated if not provided)
             document_key: Optional specific document to query
             persist_embeddings: Whether to persist embeddings (store mode)
+            chat_history: Previous messages in the conversation
 
         Returns:
             Dict with response, sources, and thread_id
@@ -87,6 +89,7 @@ class WorkflowManager:
             "thread_id": thread_id,
             "document_key": document_key,
             "persist_embeddings": persist_embeddings,
+            "chat_history": chat_history or [],
             "target_agent": None,
             "retrieved_context": [],
             "responses": [],
@@ -129,7 +132,8 @@ def process_user_query(
     user_id: str,
     thread_id: Optional[str] = None,
     document_key: Optional[str] = None,
-    persist_embeddings: bool = False
+    persist_embeddings: bool = False,
+    chat_history: Optional[list] = None
 ) -> Dict:
     """Convenience function to process queries."""
     return workflow_manager.process_query(
@@ -137,5 +141,6 @@ def process_user_query(
         user_id=user_id,
         thread_id=thread_id,
         document_key=document_key,
-        persist_embeddings=persist_embeddings
+        persist_embeddings=persist_embeddings,
+        chat_history=chat_history
     )

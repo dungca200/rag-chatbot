@@ -1,7 +1,7 @@
 import logging
 from typing import Dict, List
 
-from apps.chatbot.graph.state import AgentState
+from apps.chatbot.graph.state import AgentState, ChatMessage
 from apps.chatbot.retrievers.supabase_retriever import SupabaseRetriever
 from core.clients.gemini_client import get_chat_model
 
@@ -15,6 +15,9 @@ Instructions:
 - If the context doesn't contain relevant information, say so clearly
 - Be concise and accurate
 - If you quote from the context, indicate which source you're using
+- Consider the conversation history for context about follow-up questions
+
+{history_section}
 
 Context:
 {context}
@@ -22,6 +25,22 @@ Context:
 Question: {query}
 
 Answer:"""
+
+
+def _format_chat_history(history: List[ChatMessage], max_messages: int = 6) -> str:
+    """Format chat history for the prompt."""
+    if not history:
+        return ""
+
+    recent = history[-max_messages:]
+    formatted = ["Conversation History:"]
+    for msg in recent:
+        role = "User" if msg["role"] == "user" else "Assistant"
+        # Truncate long messages
+        content = msg["content"][:200] + "..." if len(msg["content"]) > 200 else msg["content"]
+        formatted.append(f"{role}: {content}")
+
+    return "\n".join(formatted)
 
 
 def _format_context(documents: List[Dict]) -> str:
@@ -55,6 +74,7 @@ def rag_agent_node(state: AgentState) -> Dict:
     user_id = state.get("user_id", "")
     thread_id = state.get("thread_id")
     document_key = state.get("document_key")
+    chat_history = state.get("chat_history", [])
 
     logger.info(f"RAG Agent processing: {query[:50]}...")
 
@@ -73,14 +93,19 @@ def rag_agent_node(state: AgentState) -> Dict:
         # Semantic search
         documents = retriever.retrieve(query, top_k=5)
 
-    # Format context
+    # Format context and history
     context = _format_context(documents)
     sources = _extract_sources(documents)
+    history_section = _format_chat_history(chat_history)
 
     # Generate response
     try:
         llm = get_chat_model(temperature=0.3)
-        prompt = RAG_SYSTEM_PROMPT.format(context=context, query=query)
+        prompt = RAG_SYSTEM_PROMPT.format(
+            context=context,
+            query=query,
+            history_section=history_section
+        )
         response = llm.invoke(prompt)
         answer = response.content
     except Exception as e:

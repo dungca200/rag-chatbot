@@ -48,7 +48,7 @@ const suggestions: {
 export function MessageList({ messages }: MessageListProps) {
   const endRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { isStreaming, streamingContent, setSuggestedPrompt, setFocusInput } = useChatStore();
+  const { isStreaming, isLoading, setSuggestedPrompt, setFocusInput } = useChatStore();
 
   const handleSuggestionClick = (action: SuggestionAction, prompt?: string) => {
     switch (action) {
@@ -69,7 +69,23 @@ export function MessageList({ messages }: MessageListProps) {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamingContent]);
+  }, [messages]);
+
+  // Show loading state when switching conversations
+  if (messages.length === 0 && isLoading) {
+    return (
+      <div className="flex-1 min-h-0 flex items-center justify-center p-8 overflow-y-auto">
+        <div className="flex items-center gap-3 text-muted-foreground">
+          <div className="flex gap-1">
+            <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: '0ms' }} />
+            <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: '150ms' }} />
+            <span className="w-2 h-2 rounded-full bg-accent animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+          <span>Loading conversation...</span>
+        </div>
+      </div>
+    );
+  }
 
   if (messages.length === 0 && !isStreaming) {
     return (
@@ -158,21 +174,19 @@ export function MessageList({ messages }: MessageListProps) {
   return (
     <div className="flex-1 min-h-0 overflow-y-auto">
       <div className="max-w-4xl mx-auto py-6">
-        {messages.map((message) => (
-          <MessageBubble key={message.id} message={message} />
-        ))}
-
-        {isStreaming && (
-          <MessageBubble
-            message={{
-              id: 'streaming',
-              role: 'assistant',
-              content: streamingContent,
-              created_at: new Date().toISOString(),
-            }}
-            isStreaming
-          />
-        )}
+        {messages.map((message, index) => {
+          // The last assistant message is streaming if isStreaming is true
+          const isLastAssistant = isStreaming &&
+            message.role === 'assistant' &&
+            index === messages.length - 1;
+          return (
+            <MessageBubble
+              key={message.id}
+              message={message}
+              isStreaming={isLastAssistant}
+            />
+          );
+        })}
 
         <div ref={endRef} />
       </div>

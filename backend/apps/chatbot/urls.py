@@ -11,6 +11,9 @@ urlpatterns = [
     path('conversations/', views.list_conversations, name='list_conversations'),
     path('conversations/<uuid:conversation_id>/', views.get_conversation, name='get_conversation'),
     path('conversations/<uuid:conversation_id>/delete/', views.delete_conversation, name='delete_conversation'),
+
+    # Document-specific conversation
+    path('conversations/document/<str:document_key>/', views.document_conversation, name='document_conversation'),
 ]
 
 # Admin URLs (BE-034)

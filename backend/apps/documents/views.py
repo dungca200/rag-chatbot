@@ -173,11 +173,12 @@ def upload_document(request):
 @permission_classes([IsAuthenticated])
 def list_documents(request):
     """
-    List user's documents.
+    List user's persistent documents (excludes session-only uploads).
 
     GET /api/documents/
     """
-    documents = Document.objects.filter(user=request.user)
+    # Only show persistent documents (is_persistent=True)
+    documents = Document.objects.filter(user=request.user, is_persistent=True)
     serializer = DocumentSerializer(documents, many=True)
 
     return Response({

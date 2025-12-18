@@ -55,7 +55,8 @@ export interface ConversationDetail extends Conversation {
 }
 
 export interface Source {
-  content: string;
+  key?: string;
+  content?: string;
   metadata?: Record<string, unknown>;
   similarity?: number;
 }
@@ -69,6 +70,7 @@ export interface Document {
   file_size: number;
   file_size_display: string;
   document_key: string;
+  file_url: string;
   is_vectorized: boolean;
   is_persistent: boolean;
   chunk_count: number;

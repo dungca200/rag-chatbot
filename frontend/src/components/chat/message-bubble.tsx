@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { User, Bot, ChevronDown, ChevronUp, FileText, Sparkles, Image, FileSpreadsheet, File } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { cn } from '@/lib/utils';
 import { FilePreviewModal } from './file-preview-modal';
 import type { Message } from '@/types';
@@ -160,7 +161,7 @@ export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
               : 'glass-card rounded-tl-sm'
           )}
         >
-          <div className="prose prose-sm dark:prose-invert max-w-none">
+          <div className="prose prose-sm dark:prose-invert max-w-none prose-p:my-1 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
             {/* Thinking state - no content yet */}
             {isStreaming && !message.content && (
               <div className="flex items-center gap-1.5">
@@ -174,8 +175,14 @@ export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
             )}
             {/* Content with optional streaming indicator */}
             {message.content && (
-              <p className="whitespace-pre-wrap text-sm leading-relaxed m-0">
-                {message.content}
+              <>
+                {isUser ? (
+                  <p className="whitespace-pre-wrap text-sm leading-relaxed m-0">
+                    {message.content}
+                  </p>
+                ) : (
+                  <ReactMarkdown>{message.content}</ReactMarkdown>
+                )}
                 {isStreaming && (
                   <span className="inline-flex items-center gap-1 ml-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" style={{ animationDelay: '0ms' }} />
@@ -183,7 +190,7 @@ export function MessageBubble({ message, isStreaming }: MessageBubbleProps) {
                     <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" style={{ animationDelay: '300ms' }} />
                   </span>
                 )}
-              </p>
+              </>
             )}
           </div>
         </div>

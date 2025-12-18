@@ -30,25 +30,28 @@ def sse_message(event: str, data: dict) -> str:
 
 def stream_chat_response(user, message, conversation_id=None, document_key=None, persist_embeddings=False, file_info=None):
     """Generator that streams chat response via SSE."""
+    logger.info(f"stream_chat_response called with document_key={document_key}, conversation_id={conversation_id}")
 
     # Get or create conversation
     if conversation_id:
         try:
             conversation = Conversation.objects.get(id=conversation_id, user=user)
+            logger.info(f"Using existing conversation: {conversation.id}")
         except Conversation.DoesNotExist:
             yield sse_message("error", {"message": "Conversation not found"})
             return
     else:
         conversation = Conversation.objects.create(user=user)
+        logger.info(f"Created new conversation: {conversation.id}")
         yield sse_message("conversation", {"id": str(conversation.id)})
 
     # Handle document_key: use provided one, or fall back to conversation's stored document_key
     active_document_key = document_key
     if document_key:
-        # New document uploaded - store it on the conversation
+        # Store document_key on the conversation
         conversation.document_key = document_key
         conversation.save(update_fields=['document_key'])
-        logger.info(f"Stored document_key {document_key} on conversation {conversation.id}")
+        logger.info(f"Saved document_key '{document_key}' to conversation {conversation.id}")
     elif conversation.document_key:
         # No new document but conversation has one - use it for follow-up questions
         active_document_key = conversation.document_key
@@ -321,6 +324,66 @@ def delete_conversation(request, conversation_id):
         "success": True,
         "message": "Conversation deleted"
     })
+
+
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def document_conversation(request, document_key):
+    """
+    Get or create a conversation for a specific document.
+
+    GET /api/chat/conversations/document/{document_key}/
+        - Returns existing conversation for this document or empty state
+
+    POST /api/chat/conversations/document/{document_key}/
+        - Creates a new conversation for this document (replaces existing)
+    """
+    if request.method == 'GET':
+        logger.info(f"Looking for conversation with document_key: {document_key} for user: {request.user.id}")
+
+        # Find existing conversation for this document
+        conversation = Conversation.objects.filter(
+            user=request.user,
+            document_key=document_key
+        ).first()
+
+        if conversation:
+            logger.info(f"Found conversation: {conversation.id} with document_key: {conversation.document_key}")
+            serializer = ConversationDetailSerializer(conversation)
+            return Response({
+                "success": True,
+                "exists": True,
+                "conversation": serializer.data
+            })
+        else:
+            # Debug: List all conversations for this user with their document_keys
+            all_convs = Conversation.objects.filter(user=request.user).values('id', 'document_key', 'title')[:10]
+            logger.info(f"No conversation found. User's recent conversations: {list(all_convs)}")
+            return Response({
+                "success": True,
+                "exists": False,
+                "conversation": None
+            })
+
+    elif request.method == 'POST':
+        # Delete existing conversation for this document (if any)
+        Conversation.objects.filter(
+            user=request.user,
+            document_key=document_key
+        ).delete()
+
+        # Create new conversation
+        conversation = Conversation.objects.create(
+            user=request.user,
+            document_key=document_key,
+            title=f"Chat about document"
+        )
+
+        serializer = ConversationDetailSerializer(conversation)
+        return Response({
+            "success": True,
+            "conversation": serializer.data
+        }, status=status.HTTP_201_CREATED)
 
 
 # BE-034: Admin APIs

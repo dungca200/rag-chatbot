@@ -103,7 +103,16 @@ export function useChat() {
 
     setLoading(true);
     setStreaming(true);
-    setStreamingContent('');
+
+    // Create placeholder assistant message for streaming
+    const assistantId = `assistant-${Date.now()}`;
+    const assistantPlaceholder: Message = {
+      id: assistantId,
+      role: 'assistant',
+      content: '',
+      created_at: new Date().toISOString(),
+    };
+    addMessage(assistantPlaceholder);
 
     try {
       // Prepare request body
@@ -202,7 +211,6 @@ export function useChat() {
 
         for (const line of lines) {
           if (line.startsWith('event: ')) {
-            const eventType = line.slice(7).trim();
             continue;
           }
 
@@ -217,14 +225,15 @@ export function useChat() {
               }
 
               if (data.content && data.role === undefined) {
-                // Token event
+                // Token event - update message in place
                 assistantContent += data.content;
-                appendStreamingContent(data.content);
+                updateMessage(assistantId, { content: assistantContent });
               }
 
               if (data.role === 'assistant' && data.content) {
-                // Full message event
+                // Full message event - update final content
                 assistantContent = data.content;
+                updateMessage(assistantId, { content: assistantContent });
               }
 
               if (data.title && newConversationId) {
@@ -249,17 +258,6 @@ export function useChat() {
         }
       }
 
-      // Add final assistant message
-      if (assistantContent) {
-        const assistantMessage: Message = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: assistantContent,
-          created_at: new Date().toISOString(),
-        };
-        addMessage(assistantMessage);
-      }
-
       // Navigate to conversation if new
       if (newConversationId && newConversationId !== targetConversationId) {
         router.push(`/chat/${newConversationId}`);
@@ -268,10 +266,11 @@ export function useChat() {
     } catch (error) {
       console.error('Chat error:', error);
       toast.error('Failed to send message');
+      // Remove the empty placeholder on error
+      updateMessage(assistantId, { content: 'Sorry, I encountered an error. Please try again.' });
     } finally {
       setLoading(false);
       setStreaming(false);
-      setStreamingContent('');
     }
   }, [
     currentConversationId,
@@ -279,8 +278,6 @@ export function useChat() {
     updateMessage,
     setLoading,
     setStreaming,
-    setStreamingContent,
-    appendStreamingContent,
     setCurrentConversationId,
     addConversation,
     router,
@@ -290,7 +287,11 @@ export function useChat() {
     const currentTokens = getFreshTokens();
     if (!currentTokens?.access) return;
 
+    // Clear messages immediately to prevent showing old conversation
+    setMessages([]);
+    setCurrentConversationId(conversationId);
     setLoading(true);
+
     try {
       const response = await fetch(`${API_URL}/api/chat/conversations/${conversationId}/`, {
         headers: {
@@ -304,7 +305,6 @@ export function useChat() {
 
       const data = await response.json();
       if (data.success && data.conversation) {
-        setCurrentConversationId(conversationId);
         setMessages(data.conversation.messages || []);
       }
     } catch (error) {

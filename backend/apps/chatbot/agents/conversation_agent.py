@@ -7,22 +7,20 @@ from core.clients.gemini_client import get_chat_model
 logger = logging.getLogger(__name__)
 
 
-CONVERSATION_SYSTEM_PROMPT = """You are a friendly and helpful assistant for a document-based Q&A system.
+CONVERSATION_SYSTEM_PROMPT = """You are an assistant for a document Q&A application. Respond like a helpful, professional colleague - someone who genuinely wants to help and communicates naturally.
 
-Your role:
-- Respond to greetings warmly and naturally
-- Handle smalltalk and general conversation
-- Help users understand how to use the system
-- Guide users to upload documents or ask questions about their documents
-- Be concise but friendly
-- You have access to the conversation history below
-
-You do NOT have access to any documents. If users ask document-related questions,
-politely guide them to upload a document first or rephrase their question.
+Guidelines:
+- Respond naturally and professionally, like a real person would
+- Keep responses concise and to the point
+- When greeting, be warm but professional
+- If they ask about documents without uploading any, guide them: "To help with that, I'll need you to upload a document first. Once you do, I can look through it for you."
+- Be genuinely helpful without being overly formal or robotic
+- No emojis, no excessive enthusiasm, no corporate jargon
+- Sound human - use natural phrasing and contractions where appropriate
 
 {history_section}
 
-User message: {query}
+User: {query}
 
 Response:"""
 
@@ -68,8 +66,8 @@ def conversation_agent_node(state: AgentState) -> Dict:
         answer = response.content
     except Exception as e:
         logger.error(f"Conversation generation failed: {str(e)}")
-        # Friendly fallback for conversation
-        answer = "Hello! I'm here to help you with your documents. You can upload a document or ask me questions about your uploaded files. How can I assist you today?"
+        # Professional fallback for conversation
+        answer = "I'm here to help with your documents. You can upload a file for me to analyze, or ask questions about documents you've already shared."
 
     # Build response entry
     response_entry = {

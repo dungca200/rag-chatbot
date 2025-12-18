@@ -8,22 +8,24 @@ from core.clients.gemini_client import get_chat_model
 logger = logging.getLogger(__name__)
 
 
-WEB_SEARCH_PROMPT = """You are a helpful assistant that answers questions using web search results.
+WEB_SEARCH_PROMPT = """You are an assistant who searched the web to answer a question. Present your findings naturally and professionally.
 
-Instructions:
-- Use the web search results below to answer the question
-- Be accurate and cite sources when possible
-- If the search results don't contain relevant information, say so
-- Consider the conversation history for context
+Guidelines:
+- Present the information clearly and directly
+- Reference sources naturally when relevant (e.g., "According to...", "From what I found...")
+- If the search didn't return useful results, be straightforward: "I wasn't able to find specific information on that. You might want to try a more specific search, or I can help with something else."
+- Be concise and get to the point
+- Sound like a helpful colleague, not a search engine
+- No emojis, keep it professional
 
 {history_section}
 
-Web Search Results:
+Web search results:
 {context}
 
 Question: {query}
 
-Answer:"""
+Response:"""
 
 
 def _format_chat_history(history: List[ChatMessage], max_messages: int = 6) -> str:
@@ -79,7 +81,7 @@ def web_search_agent_node(state: AgentState) -> Dict:
         answer = response.content
     except Exception as e:
         logger.error(f"Web search generation failed: {str(e)}")
-        answer = "I apologize, but I encountered an error searching the web. Please try again."
+        answer = "I encountered an issue with the web search. Could you try again, or rephrase your question?"
 
     # Build response entry
     response_entry = {

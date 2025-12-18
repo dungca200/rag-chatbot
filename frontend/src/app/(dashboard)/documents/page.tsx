@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { FileText, Trash2, FileSpreadsheet, Image, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { FileText, Trash2, FileSpreadsheet, Image, Loader2, ExternalLink } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { apiClient } from '@/lib/api/client';
 import { cn } from '@/lib/utils';
@@ -14,6 +15,7 @@ function getFileIcon(fileType: string) {
 }
 
 export default function DocumentsPage() {
+  const router = useRouter();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -86,7 +88,9 @@ export default function DocumentsPage() {
                 <th className="text-left text-sm font-medium text-foreground-secondary px-4 py-3">
                   Status
                 </th>
-                <th className="w-12"></th>
+                <th className="text-right text-sm font-medium text-foreground-secondary px-4 py-3">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -135,18 +139,27 @@ export default function DocumentsPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => handleDelete(doc.id)}
-                        disabled={deletingId === doc.id}
-                        className="p-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
-                        aria-label="Delete document"
-                      >
-                        {deletingId === doc.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-4 w-4" />
-                        )}
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => router.push(`/documents/${doc.id}`)}
+                          className="p-2 rounded-lg bg-accent/10 text-accent hover:bg-accent/20 transition-colors"
+                          title="Open document"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(doc.id)}
+                          disabled={deletingId === doc.id}
+                          className="p-2 rounded-lg text-muted-foreground hover:text-error hover:bg-error/10 transition-colors disabled:opacity-50"
+                          aria-label="Delete document"
+                        >
+                          {deletingId === doc.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

@@ -12,7 +12,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'filename', 'original_filename', 'file_type',
             'file_size', 'file_size_display', 'document_key',
-            'is_vectorized', 'is_persistent', 'chunk_count',
+            'file_url', 'is_vectorized', 'is_persistent', 'chunk_count',
             'metadata', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']

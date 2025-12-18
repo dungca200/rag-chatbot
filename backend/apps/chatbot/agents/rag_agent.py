@@ -3,28 +3,33 @@ from typing import Dict, List
 
 from apps.chatbot.graph.state import AgentState, ChatMessage
 from apps.chatbot.retrievers.supabase_retriever import SupabaseRetriever
+from apps.chatbot.tools.response_validator import humanize_response
 from core.clients.gemini_client import get_chat_model
 
 logger = logging.getLogger(__name__)
 
 
-RAG_SYSTEM_PROMPT = """You are a helpful assistant that answers questions based on the provided context.
+RAG_SYSTEM_PROMPT = """You are a knowledgeable assistant helping users understand their documents. Respond as a thoughtful colleague would - naturally, professionally, and with genuine care for being helpful.
 
-Instructions:
-- Use ONLY the information from the context to answer the question
-- If the context doesn't contain relevant information, say so clearly
-- Be concise and accurate
-- If you quote from the context, indicate which source you're using
-- Consider the conversation history for context about follow-up questions
+Guidelines:
+- Answer based on the provided document context
+- Write like a real person having a conversation, not like a system generating output
+- If the information isn't available in the context:
+  - Never use phrases like "The context does not provide..." or "Based on the provided context..."
+  - Instead, be direct and helpful: "I don't see that covered in this document. Is there something specific you'd like me to look for, or could you point me to where that might be?"
+  - Or offer what you did find: "That specific detail isn't in here, but I found some related information that might help..."
+- Be concise and get to the point
+- No emojis or overly casual language - keep it professional but warm
+- Sound like a person, not a template
 
 {history_section}
 
-Context:
+Document Context:
 {context}
 
 Question: {query}
 
-Answer:"""
+Response:"""
 
 
 def _format_chat_history(history: List[ChatMessage], max_messages: int = 6) -> str:
@@ -58,9 +63,17 @@ def _format_context(documents: List[Dict]) -> str:
     return "\n\n---\n\n".join(context_parts)
 
 
-def _extract_sources(documents: List[Dict]) -> List[str]:
-    """Extract source keys from documents."""
-    return [doc.get("key", "") for doc in documents if doc.get("key")]
+def _extract_sources(documents: List[Dict]) -> List[Dict]:
+    """Extract source information from documents."""
+    sources = []
+    for doc in documents:
+        if doc.get("key"):
+            sources.append({
+                "key": doc.get("key", ""),
+                "content": doc.get("content", "")[:200],  # First 200 chars
+                "similarity": doc.get("similarity", 0)
+            })
+    return sources
 
 
 def rag_agent_node(state: AgentState) -> Dict:
@@ -82,30 +95,27 @@ def rag_agent_node(state: AgentState) -> Dict:
     retriever = SupabaseRetriever()
     retriever.set_user_id(user_id)
 
-    # Smart document retrieval:
-    # 1. Always do semantic search to find the most relevant documents
-    # 2. If document_key exists, also include that document as context
-    # This allows the bot to answer questions about OTHER documents even when one is uploaded
-
-    # First, do semantic search across all user's documents
-    documents = retriever.retrieve(query, top_k=5)
-    logger.info(f"Semantic search found {len(documents)} documents")
-
-    # If a specific document_key is provided, check if it's already in results
+    # When a document_key is provided (e.g., viewing a specific document),
+    # search ONLY within that document's chunks
+    # Use higher top_k and lower threshold to get more context from the specific document
     if document_key:
-        doc_keys_found = [d.get('key', '').split('_chunk_')[0] for d in documents]
+        logger.info(f"Searching within document: {document_key}")
+        documents = retriever.retrieve(
+            query,
+            top_k=10,
+            match_threshold=0.05,  # Lower threshold for document-specific search
+            document_key=document_key
+        )
+        logger.info(f"Found {len(documents)} chunks from document {document_key}")
 
-        # If the conversation's document isn't in semantic results,
-        # it means the query might still be about that document but with different wording
-        # Add it to provide context
-        if document_key not in doc_keys_found:
-            logger.info(f"Adding conversation document {document_key} to context")
-            doc = retriever.get_document_by_key(document_key)
-            if doc:
-                # Add at the end with lower priority (semantic matches come first)
-                documents.append(doc)
-        else:
-            logger.info(f"Conversation document {document_key} already in semantic results")
+        # If still no results, get all chunks for this document
+        if not documents:
+            logger.info(f"No semantic matches, fetching all document chunks")
+            documents = retriever.get_all_chunks_for_document(document_key)
+    else:
+        # No specific document - search across all user's documents
+        documents = retriever.retrieve(query, top_k=5)
+        logger.info(f"Semantic search found {len(documents)} documents")
 
     # Format context
     context = _format_context(documents)
@@ -122,9 +132,12 @@ def rag_agent_node(state: AgentState) -> Dict:
         )
         response = llm.invoke(prompt)
         answer = response.content
+
+        # Humanize response if it sounds robotic
+        answer = humanize_response(answer)
     except Exception as e:
         logger.error(f"RAG generation failed: {str(e)}")
-        answer = "I apologize, but I encountered an error generating a response. Please try again."
+        answer = "I ran into an issue processing that. Could you try again? If the problem persists, try rephrasing your question."
 
     # Build response entry
     response_entry = {

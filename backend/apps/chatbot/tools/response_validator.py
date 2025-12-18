@@ -146,3 +146,65 @@ def quick_validate(
         "source_count": len(sources),
         "confidence_score": 0.8
     }
+
+
+HUMANIZE_PROMPT = """You are a response editor. Your job is to take a response and make it sound more natural and human while keeping the same meaning.
+
+Rules:
+- Keep the same factual content and meaning
+- Remove robotic phrases like "Based on the context...", "The document states...", "According to the provided information..."
+- Make it sound like a knowledgeable colleague explaining something
+- Be professional but warm - no emojis, no excessive casualness
+- Keep it concise
+- If the response says information isn't available, make that sound natural too (not "The context does not provide...")
+- Don't add information that wasn't in the original response
+
+Original response:
+{response}
+
+Rewritten response (same content, more natural tone):"""
+
+
+def humanize_response(response: str) -> str:
+    """
+    Rewrite a response to sound more natural and human.
+
+    Args:
+        response: The original response to humanize
+
+    Returns:
+        A more natural-sounding version of the response
+    """
+    if not response or not response.strip():
+        return response
+
+    # Check if response already sounds natural (skip processing)
+    robotic_phrases = [
+        "based on the context",
+        "based on the provided",
+        "the context does not",
+        "the document states",
+        "according to the provided",
+        "the information provided",
+        "i cannot find",
+        "i apologize",
+    ]
+
+    response_lower = response.lower()
+    needs_humanizing = any(phrase in response_lower for phrase in robotic_phrases)
+
+    if not needs_humanizing:
+        return response
+
+    try:
+        llm = get_chat_model(temperature=0.3)
+        prompt = HUMANIZE_PROMPT.format(response=response)
+        result = llm.invoke(prompt)
+
+        humanized = result.content.strip()
+        logger.info("Response humanized successfully")
+        return humanized
+
+    except Exception as e:
+        logger.warning(f"Failed to humanize response: {str(e)}")
+        return response  # Return original on error
